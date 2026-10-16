@@ -1369,7 +1369,12 @@ app.delete("/api/qr-codes/:id", requireAuth, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default app;
+
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 3000;
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
