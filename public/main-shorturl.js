@@ -8,7 +8,7 @@ export async function shortUrl(e) {
   submitBtn.disabled = true;
   submitBtn.textContent = "Shrinking...";
   try {
-    const response = await fetch('http://localhost:3000/api/shorten', {
+    const response = await fetch('/api/shorten', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ export async function handleCodeVerification(email) {
   confirmVerifyBtn.textContent = "Processing verification...";
 
   try {
-    const response = await fetch('http://localhost:3000/api/auth/verify', {
+    const response = await fetch('/api/auth/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, code })
@@ -43,7 +43,7 @@ export async function handleResendCode(email) {
   resendCodeBtn.textContent = "Sending code...";
   resendCodeBtn.style.pointerEvents = "none"; 
   try {
-    const response = await fetch('http://localhost:3000/api/auth/resend', {
+    const response = await fetch('/api/auth/resend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email })

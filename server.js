@@ -402,7 +402,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 export async function sendResetPasswordEmail(recipientEmail, resetToken) {
-  const resetLink = `http://localhost:3000/reset_password?token=${resetToken}`;
+  const resetLink = `${BASE_URL}/reset_password?token=${resetToken}`;
   const mailOptions = {
     from: `"cutlink Support" <${process.env.EMAIL_USER}>`,
     to: recipientEmail,

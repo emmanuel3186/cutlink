@@ -90,7 +90,7 @@
 
   // Existing short links for the "Use an existing link" picker (reuses the My Links service).
   async function getLinkOptions() {
-    const data = await http('http://localhost:3000/api/user/links');
+    const data = await http('/api/user/links');
 
     const links = Array.isArray(data) ? data : data.links;
 
@@ -100,7 +100,7 @@
 
     return links.map((l) => ({
       id: l._id ?? l.id,
-      shortUrl: `http://localhost:3000/${l.shortUrl}`,
+      shortUrl: `https://cutlink-rho.vercel.app/${l.shortUrl}`,
       originalUrl: l.longUrl,
     }));
   }
@@ -440,7 +440,7 @@ function initQRPage() {
       row.insertAdjacentHTML('beforeend', ICON.link);
       const fullShortUrl = qr.shortUrl.startsWith('http')
         ? qr.shortUrl
-        : `http://localhost:3000/${qr.shortUrl}`;
+        : `https://cutlink-rho.vercel.app/${qr.shortUrl}`;
 
       const t = h('span', 'truncate', fullShortUrl);
       t.title = fullShortUrl;
