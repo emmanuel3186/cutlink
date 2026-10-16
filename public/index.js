@@ -243,7 +243,7 @@ export async function initDashboard(token) {
 
     if (!wasViewingContent) setDashboardView('loading');
     try {
-    const res = await fetch(`${API_BASE}/api/user/links`, {
+    const res = await fetch(`/api/user/links`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -387,7 +387,7 @@ export async function initDashboard(token) {
         exportBtn.disabled = true;
         exportBtn.textContent = 'Generating PDF...';
         try {
-          const response = await fetch(`${API_BASE}/export-pdf`, {
+          const response = await fetch(`/export-pdf`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -438,7 +438,7 @@ export async function loadLinkDetailsToDashboard(shortCode, token, range = 30) {
 
   try {
     const res = await fetch(
-      `${API_BASE}/api/analytics/${encodeURIComponent(shortCode)}?range=${encodeURIComponent(range)}`,
+      `/api/analytics/${encodeURIComponent(shortCode)}?range=${encodeURIComponent(range)}`,
       { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } }
     );
     const data = await res.json();

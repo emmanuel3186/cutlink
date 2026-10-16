@@ -318,7 +318,7 @@ export async function deleteLinkFromServer(id) {
     throw new Error('Your session has expired. Please log in again.');
   }
   const response = await fetch(
-    `${API_BASE}/api/delete/${encodeURIComponent(id)}`,
+    `/api/delete/${encodeURIComponent(id)}`,
     {
       method: 'DELETE',
       headers: {

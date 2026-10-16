@@ -100,7 +100,7 @@
 
     return links.map((l) => ({
       id: l._id ?? l.id,
-      shortUrl: `https://cutlink-rho.vercel.app/${l.shortUrl}`,
+      shortUrl: `${window.location.origin}/${l.shortUrl}`,
       originalUrl: l.longUrl,
     }));
   }
@@ -440,7 +440,7 @@ function initQRPage() {
       row.insertAdjacentHTML('beforeend', ICON.link);
       const fullShortUrl = qr.shortUrl.startsWith('http')
         ? qr.shortUrl
-        : `https://cutlink-rho.vercel.app/${qr.shortUrl}`;
+        : `${window.location.origin}/${qr.shortUrl}`;
 
       const t = h('span', 'truncate', fullShortUrl);
       t.title = fullShortUrl;
