@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | cutlink</title>
+  <link href="/output.css" rel="stylesheet" >
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-[#fafaf8] font-sans text-slate-800 antialiased">
+  <div id="login-container" class="min-h-screen lg:grid-cols-[60fr_40fr]">
+    <main id="loginDiv" class="flex flex-col px-6 py-6 sm:px-10 lg:px-16 lg:py-8">
+      <header>
+        <a href="/home" class="text-2xl font-extrabold tracking-tight text-indigo-600">Cutlink</a>
+      </header>
+       <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+        <h1 class="text-3xl font-bold text-slate-900 sm:text-4xl">Login</h1>
+        <p class="mt-3 text-sm text-slate-600">
+          Hi, Welcome back 👋
+        </p>
+        <div id="googleSignInContainer" class="mt-8 flex w-full justify-center"></div>
+        <p id="googleAuthError" class="mt-2 text-center text-xs font-medium text-red-600 hidden"></p>
+        <!-- Divider -->
+        <div class="my-6 flex items-center gap-4" role="separator">
+          <span class="h-px flex-1 bg-slate-200"></span>
+          <span class="text-sm text-slate-500">or Login with Email</span>
+          <span class="h-px flex-1 bg-slate-200"></span>
+        </div>
+        <!-- Email / password form -->
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email"
+              class="h-12 w-full rounded-md border border-slate-300 bg-white px-4 text-base text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+            <p id="emailError" class="mt-1 text-xs text-red-600 hidden"></p>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+            <div class="relative mt-1">
+              <input type="password" id="password" 
+                class="h-12 w-full rounded-md border border-slate-300 bg-white px-4 text-base text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              />
+              <button type="button" id="togglePasswordBtn" 
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer">
+                  <svg id="eyeIcon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+              </button>
+            </div>
+            <p id="passwordError" class="mt-1 text-xs text-red-600 hidden"></p>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <input type="checkbox" id="rememberMe" class="mr-2">
+              <label for="rememberMe" class="text-sm text-slate-700">Remember me</label>
+            </div>
+            <div class="mt-2">
+              <a href="/forgot_password" class="text-sm text-indigo-600 hover:text-indigo-500 transition">Forgot password?</a>
+            </div>
+          </div>
+          <button type="submit" id="submitBtn"
+            class="h-12 w-full rounded-md bg-indigo-600 px-4 text-base font-semibold text-white transition hover:bg-indigo-700 focus:outline-none cursor-pointer disabled:opacity-50">
+            Log in
+          </button>
+          <p id="success-message" class="mt-2 text-center text-sm font-medium text-emerald-600 hidden"></p>
+        </form>
+        <p class="mt-5 text-xs leading-relaxed text-slate-500">
+          Not registered yet? 
+          <a href="/signup" class="text-indigo-600 font-medium">Create an account </a>
+        </p>
+
+        <p class="mt-5 text-xs leading-relaxed text-slate-500">
+          By logging in with an account, you agree to cutlink's
+          <a href="/terms-of-service" class="text-slate-500 underline font-medium">Terms of Service</a>,
+          <a href="/privacy-policy" class="text-slate-500 underline font-medium">Privacy Policy</a>, and
+          <a href="/acceptable-use-policy" class="text-slate-500 underline font-medium">Acceptable Use Policy</a>.
+      </p>
+      </div>
+      
+    </main>
+  </div>
+  <script src="/index.js" type="module" defer></script>
+  <script src="/googleBtn.js" type="module" defer></script>
+  <script src="/codeVerify.js" type="module" defer></script>
+  <script src="/dashboard-shorturl.js" type="module" defer></script>
+  <script src="/login.js" type="module" defer></script>
+  <script src="/main-shorturl.js" type="module" defer></script>
+  <script src="/password.js" type="module" defer></script>
+  <script src="/signup.js" type="module" defer></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "google-auth-library": "^11.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.3",
+    "nanoid": "^6.0.1",
+    "nodemailer": "^10.0.15",
+    "nodemon": "^3.1.14",
+    "pdfkit-table": "^0.2.11",
+    "tailwindcss": "^4.3.3"
+  },
+  "name": "url-shortener",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "npx @tailwindcss/cli -i ./src/input.css -o ./public/output.css --watch",
+    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./public/output.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

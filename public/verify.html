@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify your Account | cutlink</title>
+  <link href="/output.css" rel="stylesheet" >
+</head>
+<body class="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-md border border-slate-100">
+    <div class="text-center">
+      <h2 class="mt-6 text-3xl font-bold tracking-tight text-slate-900">Confirm Email</h2>
+      <p class="mt-2 text-sm text-slate-600">
+        We sent a 6-digit verification token to your email inbox.
+      </p>
+    </div>
+    <div id="verificationContainer" class="mt-6 space-y-4">
+      <div>
+        <label for="verifyCodeInput" class="sr-only">Verification Code</label>
+        <input type="text" 
+          id="verifyCodeInput" 
+          maxlength="6" 
+          placeholder="123456" 
+          class="block w-full text-center text-2xl tracking-widest font-bold rounded-md border border-slate-300 px-3 py-3 text-slate-800 placeholder-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition" 
+        />
+      </div>
+      <p id="verifyError" class="text-xs text-red-600 text-center hidden"></p>
+      <button type="button" 
+        id="confirmVerifyBtn" 
+        class="h-12 w-full rounded-md bg-indigo-600 text-base font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer flex items-center justify-center">
+        Verify Account
+      </button>
+      <p id="success-message" class="mt-2 text-center text-sm font-medium text-emerald-600 hidden"></p>
+    </div>
+    <div class="text-center text-sm text-slate-500 mt-6 border-t border-slate-100 pt-4">
+      Didn't get the code? 
+      <a href="#" id="resendCodeBtn" class="font-medium text-indigo-600 hover:text-indigo-500 transition ml-1">
+        Resend code
+      </a>
+    </div>
+  </div>
+
+  <script src="/index.js" type="module" defer></script>
+  <script src="/googleBtn.js" type="module" defer></script>
+  <script src="/codeVerify.js" type="module" defer></script>
+  <script src="/dashboard-shorturl.js" type="module" defer></script>
+  <script src="/login.js" type="module" defer></script>
+  <script src="/main-shorturl.js" type="module" defer></script>
+  <script src="/password.js" type="module" defer></script>
+  <script src="/signup.js" type="module" defer></script>
+</body>
+</html>

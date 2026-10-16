@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cutlink — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="/output.css" rel="stylesheet" >
+<style>body{font-family:'Inter',ui-sans-serif,system-ui,sans-serif}</style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+
+  <!-- Mobile drawer overlay -->
+  <div id="overlay" data-action="menu" class="fixed inset-0 z-30 hidden bg-slate-900/40 cursor-pointer"></div>
+
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 cursor-pointer">
+    <div class="flex h-16 items-center gap-2.5 border-b border-slate-100 px-5">
+      <span class="text-lg font-bold tracking-tight text-indigo-600">Cutlink</span>
+      <button data-action="menu" class="ml-auto rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 lg:hidden cursor-pointer" aria-label="Close menu">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 space-y-4 overflow-y-auto px-3 py-4" aria-label="Main navigation">
+      <div>
+        <p class="mb-1 px-3 text-xs font-medium text-slate-400">Main</p>
+        <a href="#" data-nav="dashboard" aria-current="page" class="flex h-10 items-center gap-3 rounded-lg bg-indigo-600 px-3 text-sm font-medium text-white">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="flex-1">Dashboard</span>
+        </a>
+        <a href="#" data-nav="links" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span class="flex-1">My Links</span>
+        </a>
+        <a href="#" data-nav="qr" data-feature="qrCodes" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M20 20h.01M17 20h3"/></svg>
+          <span class="flex-1">QR Codes</span>
+          <svg data-lock class="hidden h-3.5 w-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </a>
+      </div>
+
+      <div>
+        <p class="mb-1 px-3 text-xs font-medium text-slate-400">Analytics</p>
+        <a href="#" data-nav="analytics" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="h-4.5 w-4.5"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          <span class="flex-1">Analytics</span>
+        </a>
+        <a href="#" data-nav="audiences" data-feature="audienceAnalytics" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <svg class="h-4.5 w-4.5"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="flex-1">Audiences</span>
+          <svg data-lock class="hidden h-3.5 w-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </a>
+      </div>
+
+      <div>
+        <p class="mb-1 px-3 text-xs font-medium text-slate-400">Management</p>
+        <a href="#" data-nav="domains" data-feature="customDomains" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
+          <span class="flex-1">Custom Domains</span>
+          <svg data-lock class="hidden h-3.5 w-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </a>
+        <a href="#" data-nav="campaigns" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+          <span class="flex-1">Campaigns</span>
+        </a>
+        <a href="#" data-nav="tags" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><path d="M7 7h.01"/></svg>
+          <span class="flex-1">Tags &amp; Labels</span>
+        </a>
+      </div>
+
+      <div>
+        <p class="mb-1 px-3 text-xs font-medium text-slate-400">Account</p>
+        <a href="#" data-nav="settings" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100">
+          <svg class="h-4.5 w-4.5"viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          <span class="flex-1">Settings</span>
+        </a>
+        <!-- Hide this item for premium users -->
+        <a href="#" data-nav="upgrade" data-action="upgrade" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          <span class="flex-1">Upgrade to Premium</span>
+        </a>
+        <a id="logoutBtn" data-nav="logout" data-action="logout" class="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span class="flex-1">Log out</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Plan box -->
+    <div class="border-t border-slate-100 p-4">
+      <div class="rounded-xl bg-indigo-50 p-4">
+        <p data-slot="plan-name" class="text-sm font-semibold text-indigo-900"></p>
+        <div class="mt-3 flex justify-between text-xs text-indigo-900/70">
+          <span>Links used</span>
+          <span class="font-medium"><span data-slot="plan-used"></span> / <span data-slot="plan-limit"></span></span>
+        </div>
+        <div class="mt-1.5 h-1.5 rounded-full bg-indigo-100"><div data-slot="plan-bar" class="h-1.5 rounded-full bg-indigo-600" style="width:0%"></div></div>
+        <!-- Hide for premium users -->
+        <button data-action="upgrade" class="mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 cursor-pointer">Upgrade to Premium</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================ MAIN COLUMN ============================ -->
+  <div class="min-w-0 lg:pl-64">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-20 border-b border-slate-200 bg-slate-50/95 backdrop-blur">
+      <div class="flex h-16 items-center gap-3 px-4 sm:px-6">
+        <button data-action="menu" class="-ml-2 rounded-lg p-2 hover:bg-slate-100 lg:hidden" aria-label="Open menu">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <h1 class="text-lg font-semibold tracking-tight sm:text-xl">Dashboard</h1>
+
+        <div class="ml-auto flex items-center gap-2 sm:gap-3">
+          <label class="hidden h-10 w-64 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-slate-400 focus-within:border-indigo-600 md:flex">
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input data-bind="global-search" type="search" placeholder="Search links or campaigns" class="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400">
+          </label>
+          <button data-action="notifications" class="relative grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-slate-900 cursor-pointer" aria-label="Notifications">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span data-slot="notification-dot" class="absolute right-2.5 top-2.5 hidden h-2 w-2 rounded-full bg-indigo-600"></span>
+          </button>
+          <div class="px-5 py-2">
+            <p class="text-xs text-slate-400">Workspace</p>
+            <span id="userWorkspaceEmail" class="text-sm font-semibold text-slate-700">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-350 p-4 sm:p-6">
+
+      <!-- ===== STATE: loading (visible by default) ===== -->
+      <section id="state-loading" aria-busy="true" aria-label="Loading dashboard">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-xl border border-slate-200 bg-white p-5"><div class="h-4 w-24 animate-pulse rounded-md bg-slate-200"></div><div class="mt-4 h-8 w-32 animate-pulse rounded-md bg-slate-200"></div><div class="mt-3 h-3 w-28 animate-pulse rounded-md bg-slate-200"></div></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5"><div class="h-4 w-24 animate-pulse rounded-md bg-slate-200"></div><div class="mt-4 h-8 w-32 animate-pulse rounded-md bg-slate-200"></div><div class="mt-3 h-3 w-28 animate-pulse rounded-md bg-slate-200"></div></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5"><div class="h-4 w-24 animate-pulse rounded-md bg-slate-200"></div><div class="mt-4 h-8 w-32 animate-pulse rounded-md bg-slate-200"></div><div class="mt-3 h-3 w-28 animate-pulse rounded-md bg-slate-200"></div></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5"><div class="h-4 w-24 animate-pulse rounded-md bg-slate-200"></div><div class="mt-4 h-8 w-32 animate-pulse rounded-md bg-slate-200"></div><div class="mt-3 h-3 w-28 animate-pulse rounded-md bg-slate-200"></div></div>
+        </div>
+        <div class="mt-4 grid gap-4 xl:grid-cols-3">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 xl:col-span-2"><div class="h-5 w-40 animate-pulse rounded-md bg-slate-200"></div><div class="mt-6 h-64 w-full animate-pulse rounded-md bg-slate-200"></div></div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5"><div class="h-5 w-36 animate-pulse rounded-md bg-slate-200"></div><div class="mx-auto mt-6 h-44 w-44 animate-pulse rounded-full bg-slate-200"></div><div class="mt-6 h-24 w-full animate-pulse rounded-md bg-slate-200"></div></div>
+        </div>
+        <div class="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div class="h-5 w-48 animate-pulse rounded-md bg-slate-200"></div>
+          <div class="mt-4 h-10 w-full animate-pulse rounded-md bg-slate-200"></div>
+          <div class="mt-4 h-10 w-full animate-pulse rounded-md bg-slate-200"></div>
+          <div class="mt-4 h-10 w-full animate-pulse rounded-md bg-slate-200"></div>
+        </div>
+      </section>
+
+      <!-- ===== STATE: error ===== -->
+      <section id="state-error" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-14 text-center" role="alert">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-indigo-600">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+        </span>
+        <h2 class="mt-4 text-lg font-semibold">We couldn’t load your dashboard.</h2>
+        <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Check your connection and try again.</p>
+        <button data-action="retry" class="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white hover:bg-indigo-700 cursor-pointer">Try again</button>
+      </section>
+
+      <!-- ===== STATE: empty (no links) ===== -->
+      <section id="state-empty" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-14 text-center">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-indigo-600">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </span>
+        <h2 class="mt-4 text-lg font-semibold">You haven’t created any links yet.</h2>
+        <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Create a short link and your clicks, sources and top performers will show up here.</p>
+        <button data-action="create-link" class="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white hover:bg-indigo-700 cursor-pointer">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Create your first link
+        </button>
+      </section>
+
+      <!-- ===== READY: dashboard content ===== -->
+      <div id="dashboard-content" class="hidden">
+        <!-- Inside #dashboard-content, right above the KPI cards -->
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:p-6">
+          <!-- Header -->
+          <div class="flex items-start gap-3">
+            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+            </span>
+            <div class="min-w-0">
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900">Shorten a link</h2>
+              <p class="mt-0.5 text-sm text-slate-500">Turn long URLs into short, shareable links.</p>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <form id="dashboardShortenForm" class="mt-5 space-y-3">
+            <label for="longUrl" class="sr-only">Destination long URL</label>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <div class="relative flex-1">
+                <svg class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+                <input type="url" id="longUrl" placeholder="Paste your long URL here…"
+                  class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-base text-slate-900 placeholder-slate-400 transition duration-200 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100 sm:text-sm" />
+              </div>
+              <button type="submit" id="dashboardSubmitBtn"
+                class="inline-flex h-12 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm shadow-indigo-600/25 transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+                Shorten Link
+              </button>
+            </div>
+            <p id="dashboardFormError" role="alert" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100"></p>
+          </form>
+
+          <!-- Result (filled by your JavaScript) -->
+          <div id="dashboardResult" class="hidden mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 transition-all"></div>
+        </section>
+        <!-- KPI cards: fill data-slot value / change / sparkline inside each [data-kpi] -->
+        <section class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key metrics">
+          <!-- Total clicks -->
+          <article data-kpi="totalClicks" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 transition duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 sm:p-6">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex min-w-0 items-center gap-2.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+                </span>
+                <p class="truncate text-sm font-medium text-slate-600">Total clicks</p>
+              </div>
+              <span data-slot="change" class="shrink-0 empty:hidden"></span>
+            </div>
+            <div class="mt-4 flex items-end justify-between gap-3">
+              <p data-slot="value" class="min-w-0 truncate text-3xl font-semibold tracking-tight text-slate-900 tabular-nums"></p>
+              <div data-slot="sparkline" class="h-9 w-24 shrink-0 empty:hidden"></div>
+            </div>
+            <p class="mt-1.5 text-xs text-slate-500 empty:hidden" data-slot="comparison-label"></p>
+          </article>
+          <!-- Unique visitors -->
+          <article data-kpi="uniqueVisitors" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 transition duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 sm:p-6">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex min-w-0 items-center gap-2.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <p class="truncate text-sm font-medium text-slate-600">Unique visitors</p>
+              </div>
+              <span data-slot="change" class="shrink-0 empty:hidden"></span>
+            </div>
+            <div class="mt-4 flex items-end justify-between gap-3">
+              <p data-slot="value" class="min-w-0 truncate text-3xl font-semibold tracking-tight text-slate-900 tabular-nums"></p>
+              <div data-slot="sparkline" class="h-9 w-24 shrink-0 empty:hidden"></div>
+            </div>
+            <p class="mt-1.5 text-xs text-slate-500 empty:hidden" data-slot="comparison-label"></p>
+          </article>
+          <!-- Average CTR -->
+          <article data-kpi="averageCtr" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 transition duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 sm:p-6">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex min-w-0 items-center gap-2.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                </span>
+                <p class="truncate text-sm font-medium text-slate-600">Average CTR</p>
+              </div>
+              <span data-slot="change" class="shrink-0 empty:hidden"></span>
+            </div>
+            <div class="mt-4 flex items-end justify-between gap-3">
+              <p data-slot="value" class="min-w-0 truncate text-3xl font-semibold tracking-tight text-slate-900 tabular-nums"></p>
+              <div data-slot="sparkline" class="h-9 w-24 shrink-0 empty:hidden"></div>
+            </div>
+            <p class="mt-1.5 text-xs text-slate-500 empty:hidden" data-slot="comparison-label"></p>
+          </article>
+          <!-- Links created -->
+          <article data-kpi="linksCreated" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 transition duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 sm:p-6">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex min-w-0 items-center gap-2.5">
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+                </span>
+                <p class="truncate text-sm font-medium text-slate-600">Links created</p>
+              </div>
+              <span data-slot="change" class="shrink-0 empty:hidden"></span>
+            </div>
+            <div class="mt-4 flex items-end justify-between gap-3">
+              <p data-slot="value" class="min-w-0 truncate text-3xl font-semibold tracking-tight text-slate-900 tabular-nums"></p>
+              <div data-slot="sparkline" class="h-9 w-24 shrink-0 empty:hidden"></div>
+            </div>
+            <p class="mt-1.5 text-xs text-slate-500 empty:hidden" data-slot="comparison-label"></p>
+          </article>
+        </section>
+
+        <!-- Performance + traffic -->
+        <section class="mt-7 grid gap-5 sm:mt-8 xl:grid-cols-3 xl:gap-6">
+          <article id="performanceTrendCard" class="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50 sm:p-6 xl:col-span-2">
+            <!-- Header -->
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900">Performance trend</h2>
+              <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                <!-- Show a lock icon inside when advancedAnalytics is not available -->
+                <button data-action="compare" class="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/30 sm:flex-none">
+                  <svg data-lock class="hidden h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Compare to previous
+                </button>
+                <select data-bind="range" aria-label="Date range" class="h-10 min-w-0 flex-1 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition hover:border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/30 sm:flex-none">
+                  <option value="1">Today vs Yesterday</option>
+                  <option value="7">Last 7 days</option>
+                  <option value="30" selected>Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                </select>
+              </div>
+            </div>
+            <!-- Summary -->
+            <div class="mt-6 flex flex-wrap items-end gap-x-8 gap-y-3 **:data-[slot=period-change]:text-sm">
+              <div>
+                <p class="text-xs font-medium text-slate-500">Clicks this period</p>
+                <p data-slot="period-current" class="mt-1 text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-3xl"></p>
+              </div>
+              <div class="sm:border-l sm:border-slate-200 sm:pl-8">
+                <p class="text-xs font-medium text-slate-500">Previous period</p>
+                <p data-slot="period-previous" class="mt-1 text-lg font-medium text-slate-500 tabular-nums sm:text-xl"></p>
+              </div>
+              <div class="pb-1" data-slot="period-change"></div>
+            </div>
+            <!-- Chart -->
+            <div class="mt-8 flex gap-3 sm:gap-4">
+              <div id="chart-y-axis" class="flex h-52 flex-col-reverse justify-between text-right text-xs text-slate-500 empty:hidden sm:h-64"></div>
+              <div class="min-w-0 flex-1">
+                <!-- Render bars into #performance-chart; show tooltip in #chart-tooltip -->
+                <div id="chart-plot" class="relative h-52 border-b border-slate-200 sm:h-64">
+                  <div class="pointer-events-none absolute inset-0 flex flex-col-reverse justify-between">
+                    <div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div><div class="border-t border-slate-100"></div>
+                  </div>
+                  <div id="performance-chart" class="relative flex h-full items-end gap-px sm:gap-0.5 [&>div>div:first-child]:left-1/2 [&>div>div:first-child]:-translate-x-1/2 [&>div>div:first-child]:rounded-lg [&>div>div:first-child]:px-2.5 [&>div>div:first-child]:py-1 [&>div>div:first-child]:text-xs [&>div>div:first-child]:font-medium [&>div>div:first-child]:shadow-lg [&>div:nth-child(-n+2)>div:first-child]:left-0 [&>div:nth-child(-n+2)>div:first-child]:translate-x-0 [&>div:nth-last-child(-n+2)>div:first-child]:left-auto [&>div:nth-last-child(-n+2)>div:first-child]:right-0 [&>div:nth-last-child(-n+2)>div:first-child]:translate-x-0 [&>div>div:last-child]:rounded-t-md"></div>
+                  <div id="chart-tooltip" class="pointer-events-none absolute top-0 z-30 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-medium text-white shadow-lg"></div>
+                </div>
+                <div id="chart-x-axis" class="mt-2 flex gap-px text-xs text-slate-500 sm:gap-0.5 [&>span]:flex [&>span]:min-w-0 [&>span]:justify-center [&>span]:whitespace-nowrap"></div>
+              </div>
+            </div>
+            <!-- Legend (stays hidden until your JavaScript shows it) -->
+            <div id="chart-legend" class="mt-4 hidden text-xs text-slate-500">
+              <span class="mr-4 inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded-sm bg-indigo-600"></i>Current</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded-sm bg-indigo-200"></i>Previous</span>
+            </div>
+          </article>
+          <article id="analyticsInspectCard" class="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/50 sm:p-6">
+            <h2 class="text-lg font-semibold tracking-tight text-slate-900">Traffic channels</h2>
+            <p class="mt-1 text-sm text-slate-500">Where your clicks come from</p>
+
+            <div class="mt-6 flex justify-center">
+              <div class="relative h-44 w-44 sm:h-48 sm:w-48">
+                <div id="traffic-donut" class="h-full w-full"></div>
+                <div class="pointer-events-none absolute inset-0 grid place-content-center text-center">
+                  <p data-slot="traffic-total" class="text-2xl font-semibold leading-none tracking-tight text-slate-900 tabular-nums"></p>
+                  <p class="mt-1.5 text-xs text-slate-500">Total clicks</p>
+                </div>
+              </div>
+            </div>
+
+            <ul id="traffic-legend" class="mt-6 space-y-3"></ul>
+          </article>
+        </section>
+
+        <!-- Top links table -->
+        <section class="mt-7 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50 sm:mt-8">
+          <!-- Header + controls -->
+          <div class="flex flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <h2 class="text-lg font-semibold tracking-tight text-slate-900">Top performing links</h2>
+
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+              <label class="flex h-10 w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-slate-400 shadow-sm transition hover:border-slate-300 focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600/30 sm:w-64">
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input data-bind="links-search" type="search" placeholder="Search links" class="w-full min-w-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400">
+              </label>
+
+              <select data-bind="links-campaign" aria-label="Filter by campaign" class="h-10 min-w-0 flex-1 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition hover:border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/30 sm:flex-none">
+                <option value="all">All campaigns</option>
+              </select>
+
+              <select data-bind="links-sort" aria-label="Sort links" class="h-10 min-w-0 flex-1 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition hover:border-slate-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/30 sm:flex-none">
+                <option value="clicks">Sort: Clicks</option>
+                <option value="uniqueVisitors">Sort: Visitors</option>
+                <option value="ctr">Sort: CTR</option>
+                <option value="growth">Sort: Growth</option>
+              </select>
+
+              <button data-action="export" data-feature="exportAnalytics" class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/30">
+                <svg data-lock class="hidden h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Table (scrolls horizontally inside the card) -->
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-240 text-sm">
+              <thead class="border-y border-slate-200 bg-slate-50 text-xs text-slate-500">
+                <tr>
+                  <th class="whitespace-nowrap px-5 py-3 text-left font-medium">Short link</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-left font-medium">Destination</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-left font-medium">Campaign</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-right font-medium">Clicks</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-right font-medium">Unique visitors</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-right font-medium">CTR</th>
+                  <th class="whitespace-nowrap px-3 py-3 text-right font-medium">Growth</th>
+                  <th class="whitespace-nowrap px-5 py-3 text-right font-medium">Actions</th>
+                </tr>
+              </thead>
+              <!-- Render one <tr> per link here -->
+              <tbody id="links-body"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination footer -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-4 sm:px-6">
+            <p id="pagination-info" class="text-sm text-slate-500"></p>
+            <div id="pagination-controls" class="flex flex-wrap items-center gap-1.5 [&>button]:rounded-lg [&>button]:transition [&>button:disabled]:cursor-not-allowed [&>button:disabled]:opacity-50 [&>button]:focus-visible:outline-none [&>button]:focus-visible:ring-2 [&>button]:focus-visible:ring-indigo-600/40"></div>
+          </div>
+        </section>
+      </div>
+
+      <section id="view-links" class="hidden space-y-5">
+
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-xl font-semibold tracking-tight text-slate-900">My Links</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Every link, organized in one place.</p>
+          </div>
+          <button id="links-create" type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Create link
+          </button>
+        </div>
+
+        <div id="links-stats" class="hidden flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500" role="group" aria-label="Link summary">
+          <span><strong id="links-stat-total" class="font-semibold tabular-nums text-slate-900">0</strong> links</span>
+          <span class="text-slate-300" aria-hidden="true">/</span>
+          <span><strong id="links-stat-clicks" class="font-semibold tabular-nums text-slate-900">0</strong> total clicks</span>
+          <span class="text-slate-300" aria-hidden="true">/</span>
+          <span><strong id="links-stat-active" class="font-semibold tabular-nums text-slate-900">0</strong> with clicks</span>
+        </div>
+
+        <!-- One surface: toolbar + states + table + pagination -->
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+
+          <!-- Toolbar -->
+          <div class="flex flex-col gap-2 border-b border-slate-200 p-3 sm:flex-row sm:items-center sm:p-3.5">
+            <div class="relative flex-1">
+              <label for="links-search" class="sr-only">Search links</label>
+              <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+              <input id="links-search" type="search" autocomplete="off" placeholder="Search short or destination URL"
+                class="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1 sm:flex-none">
+                <label for="links-filter" class="sr-only">Filter by clicks</label>
+                <select id="links-filter"
+                  class="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:w-36">
+                  <option value="all">All links</option>
+                  <option value="clicked">With clicks</option>
+                  <option value="unclicked">No clicks yet</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+              <div class="relative flex-1 sm:flex-none">
+                <label for="links-sort" class="sr-only">Sort links</label>
+                <select id="links-sort"
+                  class="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:w-36">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="clicks-desc">Most clicks</option>
+                  <option value="clicks-asc">Fewest clicks</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+              <!-- Shown by JS only when a search or filter is active -->
+              <button id="links-clear-filters" type="button"
+                class="hidden h-9 shrink-0 items-center rounded-lg px-2.5 text-sm font-medium text-indigo-600 transition-colors duration-150 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Clear</button>
+            </div>
+          </div>
+
+          <!-- Loading: static skeleton placeholders (not data) -->
+          <div id="links-loading" class="hidden divide-y divide-slate-100" role="status" aria-live="polite">
+            <span class="sr-only">Loading links…</span>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-7 w-7 rounded-md bg-slate-100"></div><div class="h-3.5 w-36 rounded bg-slate-200"></div><div class="hidden h-3.5 flex-1 rounded bg-slate-100 sm:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-7 w-7 rounded-md bg-slate-100"></div><div class="h-3.5 w-28 rounded bg-slate-200"></div><div class="hidden h-3.5 flex-1 rounded bg-slate-100 sm:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-7 w-7 rounded-md bg-slate-100"></div><div class="h-3.5 w-40 rounded bg-slate-200"></div><div class="hidden h-3.5 flex-1 rounded bg-slate-100 sm:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-7 w-7 rounded-md bg-slate-100"></div><div class="h-3.5 w-32 rounded bg-slate-200"></div><div class="hidden h-3.5 flex-1 rounded bg-slate-100 sm:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+          </div>
+
+          <!-- Error -->
+          <div id="links-error" class="hidden px-6 py-16 text-center" role="alert">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+            </div>
+            <h3 class="mt-3 text-sm font-semibold text-slate-900">Couldn't load your links</h3>
+            <p id="links-error-msg" class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Check your connection and try again.</p>
+            <button id="links-retry" type="button"
+              class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Try again</button>
+          </div>
+
+          <!-- Empty -->
+          <div id="links-empty" class="hidden px-6 py-16 text-center">
+            <svg class="mx-auto h-24 w-24" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+              <circle cx="48" cy="48" r="40" class="fill-indigo-50"/>
+              <rect x="14" y="36" width="42" height="24" rx="12" transform="rotate(-20 35 48)" class="stroke-indigo-300" stroke-width="5"/>
+              <rect x="40" y="36" width="42" height="24" rx="12" transform="rotate(-20 61 48)" class="stroke-indigo-600" stroke-width="5"/>
+            </svg>
+            <h3 class="mt-2 text-base font-semibold text-slate-900">No links yet</h3>
+            <p class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Create your first short link and start tracking its performance.</p>
+            <button id="links-empty-create" type="button"
+              class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+              Create link
+            </button>
+          </div>
+
+          <!-- No results -->
+          <div id="links-no-results" class="hidden px-6 py-16 text-center">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+            </div>
+            <h3 class="mt-3 text-sm font-semibold text-slate-900">No links match your search</h3>
+            <p class="mt-1 text-sm text-slate-500">Try a different keyword or clear the filter.</p>
+            <button id="links-clear" type="button"
+              class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Clear search and filter</button>
+          </div>
+
+          <!-- Table (desktop) + cards (mobile), both rendered from the same data -->
+          <div id="links-table-wrap" class="hidden">
+            <div class="hidden overflow-x-auto sm:block">
+              <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
+                  <tr>
+                    <th scope="col" class="whitespace-nowrap px-5 py-2.5">Short URL</th>
+                    <th scope="col" class="w-full px-4 py-2.5">Destination URL</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5 text-right">Clicks</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5">Date created</th>
+                    <th scope="col" class="whitespace-nowrap px-5 py-2.5 text-right"><span class="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="links-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+            <ul id="links-cards" class="divide-y divide-slate-100 sm:hidden"></ul>
+          </div>
+
+          <!-- Pagination (container only toggles hidden; layout lives on the inner div) -->
+          <div id="links-pagination" class="hidden border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-5">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p id="links-summary" class="text-xs text-slate-500" aria-live="polite"></p>
+              <div class="flex items-center gap-2">
+                <button id="links-prev" type="button"
+                  class="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Previous</button>
+                <span id="links-page-label" class="px-1 text-xs tabular-nums text-slate-500"></span>
+                <button id="links-next" type="button"
+                  class="h-8 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Screen-reader announcements (copy / delete results) -->
+        <p id="links-live" class="sr-only" role="status" aria-live="polite"></p>
+
+        <!-- Delete confirmation -->
+        <dialog id="links-delete-dialog"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m2 0v9.5a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 016 15.5V6"/></svg>
+            </div>
+            <h3 class="mt-3 text-base font-semibold text-slate-900">Delete this link?</h3>
+            <p id="links-delete-target" class="mt-1 break-all text-sm font-medium text-slate-700"></p>
+            <p class="mt-1 text-sm text-slate-500">This can't be undone.</p>
+            <p id="links-delete-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          </div>
+          <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <button id="links-delete-cancel" type="button"
+              class="h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Cancel</button>
+            <button id="links-delete-confirm" type="button"
+              class="h-9 rounded-lg bg-red-600 px-3.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">Delete link</button>
+          </div>
+        </dialog>
+      </section>
+
+      <section id="view-qr" class="hidden space-y-5">
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-xl font-semibold tracking-tight text-slate-900">QR Codes</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Create, manage and track QR codes for your links.</p>
+          </div>
+          <button id="qr-create" type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            <span><span class="hidden sm:inline">Create </span><span class="sm:hidden">New </span>QR Code</span>
+          </button>
+        </div>
+        <!-- Shown by JS only while the temporary mock service is active -->
+        <div id="qr-mock-notice" class="hidden items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+          <svg class="mt-0.5 h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <span>Preview mode: QR codes you create exist only in this browser tab and are not saved to your account.</span>
+        </div>
+        <!-- Summary: one connected strip instead of three separate cards -->
+        <div id="qr-summary" class="grid divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div class="px-5 py-3.5">
+            <p class="text-xs font-medium text-slate-500">Total QR Codes</p>
+            <p id="qr-stat-total" class="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+          <div class="px-5 py-3.5">
+            <p class="text-xs font-medium text-slate-500">Total Scans</p>
+            <p id="qr-stat-scans" class="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+          <div class="px-5 py-3.5">
+            <p class="text-xs font-medium text-slate-500">Active QR Codes</p>
+            <p id="qr-stat-active" class="mt-0.5 text-xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+        </div>
+        <!-- Toolbar -->
+        <div id="qr-toolbar" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div class="relative flex-1">
+            <label for="qr-search" class="sr-only">Search QR codes</label>
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>
+            <input id="qr-search" type="search" autocomplete="off" placeholder="Search by name or URL"
+              class="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+          <div class="relative">
+            <label for="qr-sort" class="sr-only">Sort QR codes</label>
+            <select id="qr-sort"
+              class="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:w-40">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="scans-desc">Most scans</option>
+              <option value="scans-asc">Least scans</option>
+            </select>
+            <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+          </div>
+        </div>
+        <!-- Loading: static skeleton placeholders (not data) -->
+        <div id="qr-loading" class="hidden gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-live="polite">
+          <span class="sr-only">Loading QR codes…</span>
+          <div class="animate-pulse rounded-xl border border-slate-200 bg-white" aria-hidden="true"><div class="flex h-44 items-center justify-center rounded-t-xl bg-slate-50"><div class="h-28 w-28 rounded-lg bg-slate-200/70"></div></div><div class="space-y-2.5 p-4"><div class="h-3.5 w-2/3 rounded bg-slate-200"></div><div class="h-3 w-1/2 rounded bg-slate-100"></div><div class="h-3 w-3/4 rounded bg-slate-100"></div></div></div>
+          <div class="animate-pulse rounded-xl border border-slate-200 bg-white" aria-hidden="true"><div class="flex h-44 items-center justify-center rounded-t-xl bg-slate-50"><div class="h-28 w-28 rounded-lg bg-slate-200/70"></div></div><div class="space-y-2.5 p-4"><div class="h-3.5 w-1/2 rounded bg-slate-200"></div><div class="h-3 w-2/3 rounded bg-slate-100"></div><div class="h-3 w-3/5 rounded bg-slate-100"></div></div></div>
+          <div class="hidden animate-pulse rounded-xl border border-slate-200 bg-white lg:block" aria-hidden="true"><div class="flex h-44 items-center justify-center rounded-t-xl bg-slate-50"><div class="h-28 w-28 rounded-lg bg-slate-200/70"></div></div><div class="space-y-2.5 p-4"><div class="h-3.5 w-3/5 rounded bg-slate-200"></div><div class="h-3 w-1/2 rounded bg-slate-100"></div><div class="h-3 w-2/3 rounded bg-slate-100"></div></div></div>
+        </div>
+        <!-- Error -->
+        <div id="qr-error" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+          <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+          </div>
+          <h3 class="mt-3 text-sm font-semibold text-slate-900">We couldn’t load your QR codes.</h3>
+          <button id="qr-retry" type="button" class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Try Again</button>
+        </div>
+        <!-- Empty -->
+        <div id="qr-empty" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+          <svg class="mx-auto h-24 w-24" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+            <circle cx="48" cy="48" r="40" class="fill-indigo-50"/>
+            <rect x="28" y="28" width="16" height="16" rx="3" class="stroke-indigo-600" stroke-width="4"/>
+            <rect x="52" y="28" width="16" height="16" rx="3" class="stroke-indigo-300" stroke-width="4"/>
+            <rect x="28" y="52" width="16" height="16" rx="3" class="stroke-indigo-300" stroke-width="4"/>
+            <path d="M52 52h6v6h-6zM64 52v6M52 64h6M64 64h4" class="stroke-indigo-600" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3 class="mt-2 text-base font-semibold text-slate-900">No QR codes yet</h3>
+          <p class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Create a QR code for one of your links to make it easier to share.</p>
+          <button id="qr-empty-create" type="button" class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Create QR Code
+          </button>
+        </div>
+        <!-- No search results -->
+        <div id="qr-no-results" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
+          <h3 class="text-sm font-semibold text-slate-900">No QR codes match your search</h3>
+          <p class="mt-1 text-sm text-slate-500">Try a different name or URL.</p>
+          <button id="qr-clear" type="button" class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Clear search</button>
+        </div>
+        <!-- Gallery (cards rendered by JS) -->
+        <div id="qr-grid" class="hidden gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+        <!-- Toast -->
+        <div id="qr-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+        <!-- Create dialog -->
+        <dialog id="qr-modal" aria-labelledby="qr-modal-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[90vh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 id="qr-modal-title" class="text-base font-semibold text-slate-900">Create QR Code</h3>
+              <button type="button" data-qr-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+
+            <form id="qr-form" novalidate class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+              <div>
+                <label for="qr-name" class="mb-1.5 block text-sm font-medium text-slate-700">QR Code Name <span class="font-normal text-slate-400">(optional)</span></label>
+                <input id="qr-name" type="text" maxlength="80" placeholder="e.g. Product Launch"
+                  class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+              </div>
+
+              <div>
+                <span class="mb-1.5 block text-sm font-medium text-slate-700">QR Code Type</span>
+                <div class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700">
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8.5 11.5a3.5 3.5 0 005 0l2.5-2.5a3.5 3.5 0 00-5-5l-1 1"/><path d="M11.5 8.5a3.5 3.5 0 00-5 0L4 11a3.5 3.5 0 005 5l1-1"/></svg>
+                  URL
+                </div>
+              </div>
+
+              <div>
+                <div id="qr-source-tabs" class="mb-3 inline-flex rounded-lg bg-slate-100 p-0.5 text-sm font-medium">
+                  <button type="button" data-source="url" class="rounded-md bg-white px-3 py-1.5 text-slate-900 shadow-sm">Enter a URL</button>
+                  <button type="button" data-source="link" class="rounded-md px-3 py-1.5 text-slate-500">Use an existing link</button>
+                </div>
+
+                <div id="qr-source-url">
+                  <label for="qr-url" class="mb-1.5 block text-sm font-medium text-slate-700">Destination URL</label>
+                  <input id="qr-url" type="url" inputmode="url" placeholder="https://example.com/page" autocomplete="off"
+                    class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
+
+                <div id="qr-source-link" class="hidden">
+                  <label for="qr-link" class="mb-1.5 block text-sm font-medium text-slate-700">Shortened link</label>
+                  <select id="qr-link" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></select>
+                </div>
+                <p id="qr-field-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+              </div>
+
+              <!-- Live preview of what will be encoded -->
+              <div id="qr-live" class="hidden items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div id="qr-live-img" class="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-white ring-1 ring-slate-200"></div>
+                <div class="min-w-0 text-xs text-slate-500">
+                  <p class="font-medium text-slate-700">This QR code will open:</p>
+                  <p id="qr-live-text" class="mt-0.5 break-all"></p>
+                </div>
+              </div>
+
+              <p id="qr-form-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+            </form>
+
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+              <button type="button" data-qr-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+              <button id="qr-submit" type="submit" form="qr-form"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
+                <svg id="qr-submit-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                <span id="qr-submit-label">Generate QR Code</span>
+              </button>
+            </div>
+          </div>
+        </dialog>
+        <!-- View dialog -->
+        <dialog id="qr-view-modal" aria-labelledby="qr-view-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-5 text-center">
+            <h3 id="qr-view-title" class="truncate text-base font-semibold text-slate-900"></h3>
+            <div id="qr-view-img" class="mx-auto mt-4 aspect-square w-full max-w-68 overflow-hidden rounded-xl border border-slate-200 bg-white p-1"></div>
+            <p id="qr-view-url" class="mt-3 break-all text-xs text-slate-500"></p>
+            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+              <button type="button" data-qr-view-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Close</button>
+              <button id="qr-view-download" type="button" class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:h-9">Download PNG</button>
+            </div>
+          </div>
+        </dialog>
+        <!-- Delete confirmation (only reachable when QRService.capabilities.remove is true) -->
+        <dialog id="qr-delete-dialog"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m2 0v9.5a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 016 15.5V6"/></svg>
+            </div>
+            <h3 class="mt-3 text-base font-semibold text-slate-900">Delete this QR code?</h3>
+            <p id="qr-delete-target" class="mt-1 break-all text-sm font-medium text-slate-700"></p>
+            <p class="mt-1 text-sm text-slate-500">This can't be undone. Printed copies will stop working if they point to a deleted link.</p>
+            <p id="qr-delete-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          </div>
+          <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <button id="qr-delete-cancel" type="button" class="h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">Cancel</button>
+            <button id="qr-delete-confirm" type="button" class="h-9 rounded-lg bg-red-600 px-3.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">Delete QR code</button>
+          </div>
+        </dialog>
+
+        <!-- Upgrade prompt (reusable for any gated feature) -->
+        <dialog id="qr-upgrade-modal" aria-labelledby="qr-upgrade-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-6 text-center">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
+            </div>
+            <h3 id="qr-upgrade-title" class="mt-3 text-base font-semibold text-slate-900">Upgrade to Premium</h3>
+            <p id="qr-upgrade-msg" class="mt-1 text-sm text-slate-500"></p>
+            <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+              <button type="button" data-qr-upgrade-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Not now</button>
+              <button id="qr-upgrade-go" type="button" class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:h-9">See plans</button>
+            </div>
+          </div>
+        </dialog>
+      </section>
+      <section id="analytics" class="hidden" aria-labelledby="analytics-title">
+        <div class="mx-auto w-full min-w-0 max-w-7xl space-y-5">
+          <!-- Header + controls -->
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div class="min-w-0">
+              <h1 id="analytics-title" class="text-xl font-semibold tracking-tight text-slate-900">Analytics</h1>
+              <p class="mt-0.5 text-sm text-slate-500">Understand your link performance and discover where your audience comes from.</p>
+            </div>
+            <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <div class="relative">
+                <label for="an-range" class="sr-only">Date range</label>
+                <select id="an-range" class="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:w-40">
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d" selected>Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="all">All time</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+              <!-- Hidden by JS if there is no list of links to filter by -->
+              <div class="relative min-w-0 sm:max-w-xs">
+                <label for="an-link" class="sr-only">Link filter</label>
+                <select id="an-link" class="h-9 w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                  <option value="">All links</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+              <button id="an-export" type="button" disabled
+                class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 disabled:cursor-not-allowed disabled:opacity-50">
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12"/></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+          <!-- Shown by JS only while the temporary mock service is active -->
+          <div id="an-demo-banner" class="hidden items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+            <svg class="mt-0.5 h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+            <span>Sample data. These numbers are generated for layout preview and are not your real analytics.</span>
+          </div>
+
+          <div id="an-status" class="sr-only" role="status" aria-live="polite"></div>
+
+          <!-- STATE: LOADING (static skeleton, not data) -->
+          <div id="an-skeleton" class="hidden space-y-5" aria-hidden="true">
+            <div class="grid animate-pulse gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="bg-white px-5 py-4"><div class="h-3 w-20 rounded bg-slate-200"></div><div class="mt-3 h-6 w-24 rounded bg-slate-200"></div><div class="mt-2 h-3 w-28 rounded bg-slate-100"></div></div>
+              <div class="bg-white px-5 py-4"><div class="h-3 w-24 rounded bg-slate-200"></div><div class="mt-3 h-6 w-16 rounded bg-slate-200"></div><div class="mt-2 h-3 w-24 rounded bg-slate-100"></div></div>
+              <div class="bg-white px-5 py-4"><div class="h-3 w-16 rounded bg-slate-200"></div><div class="mt-3 h-6 w-28 rounded bg-slate-200"></div><div class="mt-2 h-3 w-20 rounded bg-slate-100"></div></div>
+              <div class="bg-white px-5 py-4"><div class="h-3 w-20 rounded bg-slate-200"></div><div class="mt-3 h-6 w-24 rounded bg-slate-200"></div><div class="mt-2 h-3 w-24 rounded bg-slate-100"></div></div>
+            </div>
+            <div class="h-96 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+            <div class="h-72 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+          </div>
+
+          <!-- STATE: ERROR -->
+          <div id="an-error" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+            </div>
+            <p class="mt-3 text-sm font-semibold text-slate-900">We couldn't load your analytics.</p>
+            <p class="mt-1 text-sm text-slate-500">Check your connection and try again.</p>
+            <button type="button" data-an-retry class="mt-5 h-9 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Retry</button>
+          </div>
+
+          <!-- STATE: NOT INCLUDED IN PLAN (content filled by JS when the API answers 403 PLAN_LIMIT) -->
+          <div id="an-locked" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm"></div>
+
+          <!-- STATE: EMPTY (request succeeded, zero clicks) -->
+          <div id="an-empty" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <svg class="mx-auto h-24 w-24" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+              <circle cx="48" cy="48" r="40" class="fill-indigo-50"/>
+              <path d="M26 62h44" class="stroke-indigo-200" stroke-width="3" stroke-linecap="round"/>
+              <rect x="31" y="46" width="7" height="16" rx="2" class="fill-indigo-300"/>
+              <rect x="44.5" y="36" width="7" height="26" rx="2" class="fill-indigo-600"/>
+              <rect x="58" y="42" width="7" height="20" rx="2" class="fill-indigo-300"/>
+            </svg>
+            <p id="an-empty-title" class="mt-2 text-base font-semibold text-slate-900">No analytics data yet</p>
+            <p id="an-empty-text" class="mx-auto mt-1 max-w-md text-sm text-slate-500">Once people start clicking your shortened links, you'll see performance statistics here.</p>
+          </div>
+
+          <!-- STATE: CONTENT -->
+          <div id="an-content" class="hidden space-y-5">
+
+            <!-- Overview: one connected strip (cells rendered by JS) -->
+            <div id="an-summary" class="grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 shadow-sm sm:grid-cols-2 xl:grid-cols-4"></div>
+
+            <!-- Click performance -->
+            <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 class="text-sm font-semibold text-slate-900">Click Performance</h2>
+                  <p class="mt-0.5 text-sm text-slate-500">Track how your links perform over time.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+                  <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 rounded bg-indigo-600"></span>Clicks</span>
+                  <span id="an-legend-prev" class="hidden items-center gap-1.5"><span class="w-4 border-t-2 border-dashed border-slate-300"></span>Previous period</span>
+                  <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                    <input id="an-compare" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
+                    <span id="an-compare-label">Compare to previous period</span>
+                  </label>
+                </div>
+              </div>
+              <div class="relative h-72 sm:h-80">
+                <canvas id="an-line-chart" role="img" aria-label="Line chart of clicks over time"></canvas>
+              </div>
+              <p id="an-line-msg" class="hidden py-16 text-center text-sm text-slate-500"></p>
+            </div>
+
+            <!-- Audience: four breakdowns in one surface, separated by hairlines -->
+            <div class="grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 shadow-sm lg:grid-cols-2">
+              <div class="min-w-0 bg-white p-5">
+                <h2 class="text-sm font-semibold text-slate-900">Traffic Sources</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">See where your link clicks originate.</p>
+                <div id="an-sources-body"></div>
+              </div>
+              <div class="min-w-0 bg-white p-5">
+                <h2 class="text-sm font-semibold text-slate-900">Devices</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">The kinds of devices your audience clicks from.</p>
+                <div id="an-devices-body"></div>
+              </div>
+              <div class="min-w-0 bg-white p-5">
+                <h2 class="text-sm font-semibold text-slate-900">Browsers</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">Which browsers your visitors use.</p>
+                <div id="an-browsers-body"></div>
+              </div>
+              <div class="min-w-0 bg-white p-5">
+                <h2 class="text-sm font-semibold text-slate-900">Top Locations</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">The countries generating the most clicks.</p>
+                <div id="an-locations-body"></div>
+              </div>
+            </div>
+
+            <!-- Top performing links -->
+            <div class="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div class="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 class="text-sm font-semibold text-slate-900">Top Performing Links</h2>
+                  <p class="mt-0.5 text-sm text-slate-500">Your best links in the selected period.</p>
+                </div>
+                <button type="button" data-an-viewall class="h-9 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50">View All Links</button>
+              </div>
+              <div id="an-toplinks-body"></div>
+            </div>
+          </div>
+
+          <div id="an-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="audiences" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <p>audie</p>
+      </section>
+      <section id="custom-domains" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <p>domain</p>
+      </section>
+      <section id="campaigns" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <p>campaigns</p>
+      </section>
+      <section id="tags-label" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <p>tags</p>
+      </section>
+      <section id="view-settings" class="hidden bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+        <h2 class="text-base font-semibold text-slate-900 mb-2">Account Configurations</h2>
+        <p class="text-xs text-slate-400">Manage account passwords, verification recovery details, and premium workspace tiers.</p>
+      </section>
+      <section id="upgrade-premium" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        viewUpgradePremium
+      </section>
+
+
+      <!-- ===== Premium features (render one card per feature into #features-grid) ===== -->
+      <section id="features-section" class="mt-8 hidden">
+        <h2 data-slot="features-title" class="text-base font-semibold"></h2>
+        <p data-slot="features-subtitle" class="text-sm text-slate-500"></p>
+        <div id="features-grid" class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" class="pointer-events-none fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-slate-900 px-4 py-2 text-sm text-white opacity-0 transition-opacity"></div>
+
+  <script src="/index.js" type="module" defer></script>
+  <!--<script src="/qrcode.min.js"></script>-->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="/links-view.js" type="module" defer></script>
+  <script src="/qr-view.js" type="module" defer></script>
+  <script src="/analytics.js" type="module" defer></script>
+  <script src="/googleBtn.js" type="module" defer></script>
+  <script src="/codeVerify.js" type="module" defer></script>
+  <script src="/dashboard-shorturl.js" type="module" defer></script>
+  <script src="/login.js" type="module" defer></script>
+  <script src="/main-shorturl.js" type="module" defer></script>
+  <script src="/password.js" type="module" defer></script>
+  <script src="/signup.js" type="module" defer></script>
+</body>
+</html>
