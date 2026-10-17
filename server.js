@@ -760,7 +760,7 @@ app.get('/qr/:id', async (req, res) => {
       userAgent,
       referrer,
       device,
-      country: 'NG'
+      country
     });
 
     // Redirect the visitor to the destination.
