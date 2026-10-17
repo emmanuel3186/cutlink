@@ -682,7 +682,7 @@ app.get('/qr/:id', async (req, res) => {
       req.socket.remoteAddress ||
       'Unknown';
 
-    const referrer = req.headers['referer'] || 'Direct';
+    const referrer = req.headers['referer'] || 'Unknown';
 
     // Save the scan, linked to this specific QR code.
     await Click.create({
@@ -854,20 +854,18 @@ app.get('/api/analytics', requireAuth, async (req, res) => {
     const sources = {};
 
     clicks.forEach((click) => {
-      let source = click.referrer || 'Direct';
+      let source = click.referrer || 'Unknown';
 
-      if (source === 'Direct') {
-        sources.Direct = (sources.Direct || 0) + 1;
+      if (source === 'Direct' || source === 'Unknown') {
+        sources[source] = (sources[source] || 0) + 1;
         return;
       }
 
       try {
-        const hostname = new URL(source).hostname
-          .replace(/^www\./, '');
-
+        const hostname = new URL(source).hostname.replace(/^www\./, '');
         source = hostname;
       } catch {
-        source = 'Direct';
+        source = 'Unknown';
       }
 
       sources[source] = (sources[source] || 0) + 1;
@@ -994,7 +992,7 @@ app.get('/:code', async (req, res) => {
       device = 'Mobile';
     } 
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
-    const referrer = req.headers['referer'] || 'Direct';
+    const referrer = req.headers['referer'] || 'Unknown';
     const clickLog = new Click({
       urlId: urlRecord._id,
       ipAddress: ipAddress,
