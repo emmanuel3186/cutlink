@@ -32,6 +32,18 @@ const clickSchema = new mongoose.Schema({
   country: { 
     type: String, 
     default: "Unknown" 
+  },
+  utmSource: { 
+    type: String, 
+    default: null 
+  },
+  utmMedium: { 
+    type: String, 
+    default: null 
+  },
+  utmCampaign: { 
+    type: String, 
+    default: null 
   }
 }, { 
   timestamps: true

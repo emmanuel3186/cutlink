@@ -1063,6 +1063,9 @@ app.get('/:code', async (req, res) => {
     } 
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
     const referrer = req.headers['referer'] || 'Unknown';
+    const utmSource = req.query.utm_source || null;
+    const utmMedium = req.query.utm_medium || null;
+    const utmCampaign = req.query.utm_campaign || null;
     const country = await getCountryCode(req);
     const clickLog = new Click({
       urlId: urlRecord._id,
@@ -1070,7 +1073,10 @@ app.get('/:code', async (req, res) => {
       userAgent,
       referrer,
       device,
-      country
+      country,
+      utmSource,
+      utmMedium,
+      utmCampaign
     });
     await clickLog.save();
     return res.redirect(302, urlRecord.longUrl);
