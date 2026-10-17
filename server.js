@@ -920,22 +920,25 @@ app.get('/api/analytics', requireAuth, async (req, res) => {
         clicks: timeline[dateString] || 0,
       });
     }
-
     const sources = {};
-
     clicks.forEach((click) => {
-      let source = click.referrer || 'Unknown';
+      let source;
+      if (click.utmSource) {
+        source = click.utmSource.trim().toLowerCase();
+      } else {
+        const referrer = click.referrer;
 
-      if (source === 'Direct' || source === 'Unknown') {
-        sources[source] = (sources[source] || 0) + 1;
-        return;
-      }
-
-      try {
-        const hostname = new URL(source).hostname.replace(/^www\./, '');
-        source = hostname;
-      } catch {
-        source = 'Unknown';
+        if (!referrer || referrer === 'Unknown') {
+          source = 'Unknown';
+        } else if (referrer === 'Direct') {
+          source = 'Direct';
+        } else {
+          try {
+            source = new URL(referrer).hostname.replace(/^www\./, '');
+          } catch {
+            source = 'Unknown';
+          }
+        }
       }
 
       sources[source] = (sources[source] || 0) + 1;
