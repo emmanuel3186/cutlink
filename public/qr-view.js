@@ -603,7 +603,10 @@ function initQRPage() {
       return showUpgrade(`You've reached the limit of ${state.plan.maxQRCodes} QR codes on your plan. Upgrade to create more.`);
     }
     el.form.reset(); clearErrors(); setFlex(el.live, false); setSource('url');
-    openDlg(el.modal); el.name.focus();
+    openDlg(el.modal);
+    if (window.matchMedia('(min-width: 640px)').matches) {
+      el.name.focus();
+    }
     try { 
       state.linkOptions = await Svc.getLinkOptions(); 
     } catch (_) { 
@@ -663,6 +666,16 @@ function initQRPage() {
 
   /* ---------- Events ---------- */
   el.create.addEventListener('click', openCreate);
+  el.form.querySelectorAll('input, select').forEach((field) => {
+    field.addEventListener('focus', () => {
+      setTimeout(() => {
+        field.scrollIntoView({
+          block: 'center',
+          behavior: 'smooth'
+        });
+      }, 300);
+    });
+  });
   el.emptyCreate.addEventListener('click', openCreate);
   el.retry.addEventListener('click', load);
   el.form.addEventListener('submit', onSubmit);
