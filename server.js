@@ -752,6 +752,8 @@ app.get('/qr/:id', async (req, res) => {
 
     const referrer = req.headers['referer'] || 'Unknown';
 
+    const country = await getCountryCode(req);
+
     // Save the scan, linked to this specific QR code.
     await Click.create({
       urlId: urlRecord ? urlRecord._id : null,
