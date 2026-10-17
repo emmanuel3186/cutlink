@@ -63,6 +63,75 @@ app.get('/reset_password', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'reset_password.html')); 
 });
 
+
+const countryCache = new Map();
+const COUNTRY_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+async function getCountryCode(req) {
+  const forwardedFor = req.headers['x-forwarded-for'];
+
+  const rawIp =
+    (typeof forwardedFor === 'string'
+      ? forwardedFor.split(',')[0].trim()
+      : '') ||
+    req.socket.remoteAddress ||
+    '';
+
+  const ip = rawIp.replace(/^::ffff:/, '');
+
+  if (!ip || ip === '127.0.0.1' || ip === '::1') {
+    return 'Unknown';
+  }
+
+  const cached = countryCache.get(ip);
+
+  if (cached && Date.now() - cached.time < COUNTRY_CACHE_TTL) {
+    return cached.country;
+  }
+
+  const apiKey = process.env.IPAPI_KEY;
+
+  if (!apiKey) {
+    return 'Unknown';
+  }
+
+  try {
+    const response = await fetch('https://api.ipapi.is/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        q: ip,
+        key: apiKey
+      }),
+      signal: AbortSignal.timeout(3000)
+    });
+
+    if (!response.ok) {
+      return 'Unknown';
+    }
+
+    const data = await response.json();
+
+    const country =
+      data.location?.country_code?.toUpperCase() || 'Unknown';
+
+    if (country !== 'Unknown') {
+      countryCache.set(ip, {
+        country,
+        time: Date.now()
+      });
+    }
+
+    return country;
+  } catch (err) {
+    console.error('Country detection failed:', err.message);
+    return 'Unknown';
+  }
+}
+
+
 const requireAuth = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -992,13 +1061,14 @@ app.get('/:code', async (req, res) => {
     } 
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
     const referrer = req.headers['referer'] || 'Unknown';
+    const country = await getCountryCode(req);
     const clickLog = new Click({
       urlId: urlRecord._id,
-      ipAddress: ipAddress,
-      userAgent: userAgent,
-      referrer: referrer,
-      device: device,
-      country: 'NG' 
+      ipAddress,
+      userAgent,
+      referrer,
+      device,
+      country
     });
     await clickLog.save();
     return res.redirect(302, urlRecord.longUrl);
