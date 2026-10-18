@@ -161,7 +161,7 @@ export function initCampaignsTab(options = {}) {
         'div',
         'flex items-center justify-between gap-3 text-xs'
       );
-
+      const count = Number(item.clicks) || 0;
       row.append(
         h(
           'span',
@@ -171,7 +171,7 @@ export function initCampaignsTab(options = {}) {
         h(
           'span',
           'shrink-0 font-medium tabular-nums text-slate-700',
-          `${Number(item.clicks) || 0} clicks`
+          `${count} ${count === 1 ? 'click' : 'clicks'}`
         )
       );
 
@@ -234,9 +234,11 @@ export function initCampaignsTab(options = {}) {
     const sm = h('span');
     sm.append(c.source || '—',h('span', 'px-1 text-slate-300', '/'),c.medium || '—');
     meta.append(sm, h('span', null, fmtDate(c.createdAt)));
-    const breakdown = renderSourceBreakdown(c);
+    const breakdownSection = h('div','rounded-lg bg-slate-50 p-3');
+    breakdownSection.append(h('p','mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500','Clicks by source'),
+    renderSourceBreakdown(c));
     const acts = h('div', 'flex gap-2'); acts.append(...actionButtons(c, true));
-    li.append(top, meta, breakdown, acts);
+    li.append(top, meta, breakdownSection, acts);
     return li;
   }
 
