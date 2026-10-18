@@ -1,4 +1,5 @@
-import {shortUrl} from './main-shorturl.js'
+import {shortUrl} from './main-shorturl.js';
+import { initCampaignsTab } from './campaigns.js';
 import {handleDashboardShortenSubmit} from './dashboard-shorturl.js'
 import { tryRenderGoogleButton, handleGoogleSignIn } from './googleBtn.js';
 import { registeredEmail, handleSignIn, showFieldError, resetFieldError } from './signup.js';
@@ -270,7 +271,7 @@ export async function initDashboard(token) {
       if (el) el.textContent = text;
     };
     const totalClicks = allLinks.reduce((n, l) => n + num(l.clicks), 0);
-    const totalUnique = allLinks.reduce((n, l) => n + num(l.uniqueVisitors), 0);
+    const totalUnique = num(data.uniqueVisitors);
     const averageCtr = totalClicks > 0 ? (totalUnique / totalClicks) * 100 : 0;
     setKpi('linksCreated', allLinks.length);
     setKpi('totalClicks', totalClicks);
@@ -582,6 +583,52 @@ export function setupDashboardRoute({ handleDashboardShortenSubmit, fetchUserPro
   }
   initDashboard(token);
   if (typeof fetchUserProfile === 'function') fetchUserProfile(token);
+  
+  initCampaignsTab({
+    getCampaigns: async () => {
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch('/api/campaigns', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || 'Failed to load campaigns.'
+        );
+      }
+
+      return data.campaigns;
+    },
+    createCampaign: async (payload) => {
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          longUrl: payload.taggedUrl,
+          campaign: payload.name
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to create campaign link.');
+      }
+
+      return data;
+    }
+  });
+
   const sidebar = $id('sidebar');
   const overlay = $id('overlay');
   const openDrawer = () => {
@@ -648,6 +695,21 @@ export function setupDashboardRoute({ handleDashboardShortenSubmit, fetchUserPro
           renderMyLinksView(window.cachedLinksData, { onDelete: deleteLinkFromServer});
         } else {
           setHidden($id('links-loading'), false);
+        }
+      }
+      if (name === 'audiences') {
+        if (typeof window.initAudienceTab === 'function') {
+          window.initAudienceTab({
+            request: async (url) => {
+              const params = new URL(url, window.location.origin).searchParams;
+              return window.CutlinkAnalytics.fetchFromApi({
+                range: params.get('range') || '30d',
+                linkId: params.get('linkId') || ''
+              });
+            }
+          });
+        } else {
+          console.error('Audience: initAudienceTab is not available.');
         }
       }
     };

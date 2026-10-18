@@ -256,7 +256,7 @@
                 <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
                 </span>
-                <p class="truncate text-sm font-medium text-slate-600">Average CTR</p>
+                <p class="truncate text-sm font-medium text-slate-600">Unique Click Rate</p>
               </div>
               <span data-slot="change" class="shrink-0 empty:hidden"></span>
             </div>
@@ -937,16 +937,328 @@
           <div id="an-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
         </div>
       </section>
+      <section id="audiences" class="hidden" aria-labelledby="au-title">
+        <div class="mx-auto w-full min-w-0 max-w-7xl space-y-5">
+          <!-- Header + controls -->
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div class="min-w-0">
+              <h1 id="au-title" class="text-xl font-semibold tracking-tight text-slate-900">Audience</h1>
+              <p class="mt-0.5 text-sm text-slate-500">Understand who engages with your shortened links: where clicks come from and what devices and browsers they use.</p>
+            </div>
+            <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+              <div class="relative">
+                <label for="au-range" class="sr-only">Date range</label>
+                <select id="au-range" class="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 sm:w-40">
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d" selected>Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="all">All time</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+              <!-- Hidden by JS unless a list of links is supplied (see audience.js: getLinks) -->
+              <div id="au-link-wrap" class="relative hidden min-w-0 sm:max-w-xs">
+                <label for="au-link" class="sr-only">Link filter</label>
+                <select id="au-link" class="h-9 w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white pl-3 pr-8 text-sm text-slate-700 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20">
+                  <option value="">All links</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8l4 4 4-4"/></svg>
+              </div>
+            </div>
+          </div>
 
-      <section id="audiences" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <p>audie</p>
+          <div id="au-status" class="sr-only" role="status" aria-live="polite"></div>
+
+          <!-- STATE: LOADING (static placeholders, not data) -->
+          <div id="au-skeleton" class="hidden space-y-5" aria-hidden="true">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+              <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+              <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+              <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+            </div>
+            <div class="grid gap-4 lg:grid-cols-2">
+              <div class="h-72 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+              <div class="h-72 animate-pulse rounded-xl border border-slate-200 bg-white"></div>
+            </div>
+          </div>
+
+          <!-- STATE: ERROR -->
+          <div id="au-error" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+            </div>
+            <p class="mt-3 text-sm font-semibold text-slate-900">We couldn't load your audience data.</p>
+            <p id="au-error-msg" class="mx-auto mt-1 max-w-md text-sm text-slate-500">Check your connection and try again.</p>
+            <button id="au-retry" type="button" class="mt-5 h-9 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">Retry</button>
+          </div>
+
+          <!-- STATE: EMPTY (request succeeded, zero clicks in this selection) -->
+          <div id="au-empty" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+              <svg class="h-6 w-6" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="7" r="2.75"/><path d="M2.5 16c.4-2.6 2.4-4 5-4s4.6 1.4 5 4"/><path d="M13 4.5a2.6 2.6 0 010 5M14.5 12.3c1.6.4 2.7 1.6 3 3.7"/></svg>
+            </div>
+            <p id="au-empty-title" class="mt-4 text-base font-semibold text-slate-900">No audience data yet</p>
+            <p id="au-empty-text" class="mx-auto mt-1 max-w-md text-sm text-slate-500">Once your links receive clicks in this period, you'll see where they come from and what devices and browsers people use.</p>
+          </div>
+
+          <!-- STATE: CONTENT -->
+          <div id="au-content" class="hidden space-y-5">
+
+            <!-- KPI cards -->
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5l8 6.5-3.6.7 2 3.8-1.7.9-2-3.8L7 13.5z"/></svg>
+                  </span>
+                  <p class="text-xs font-medium text-slate-500">Total clicks</p>
+                </div>
+                <p id="au-kpi-clicks" class="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+                <p id="au-kpi-clicks-sub" class="mt-0.5 text-xs text-slate-500"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M2.75 10h14.5M10 2.75c2 2.2 3 4.6 3 7.25s-1 5.05-3 7.25c-2-2.2-3-4.6-3-7.25s1-5.05 3-7.25z"/></svg>
+                  </span>
+                  <p class="text-xs font-medium text-slate-500">Countries reached</p>
+                </div>
+                <p id="au-kpi-countries" class="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+                <p id="au-kpi-countries-sub" class="mt-0.5 text-xs text-slate-500"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="8" height="15" rx="2"/><path d="M9 14.5h2"/></svg>
+                  </span>
+                  <p class="text-xs font-medium text-slate-500">Mobile traffic</p>
+                </div>
+                <p id="au-kpi-mobile" class="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+                <p id="au-kpi-mobile-sub" class="mt-0.5 text-xs text-slate-500"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="10" rx="1.75"/><path d="M7 17h6M10 13.5V17"/></svg>
+                  </span>
+                  <p class="text-xs font-medium text-slate-500">Desktop traffic</p>
+                </div>
+                <p id="au-kpi-desktop" class="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+                <p id="au-kpi-desktop-sub" class="mt-0.5 text-xs text-slate-500"></p>
+              </div>
+            </div>
+
+            <!-- Breakdowns -->
+            <div class="grid gap-4 lg:grid-cols-2">
+              <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900">Top countries</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">Where your clicks come from.</p>
+                <div id="au-countries-body"></div>
+              </div>
+              <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900">Devices</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">The kinds of devices people click from.</p>
+                <div id="au-devices-body"></div>
+              </div>
+              <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900">Browsers</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">Which browsers people use.</p>
+                <div id="au-browsers-body"></div>
+              </div>
+              <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900">Audience insights</h2>
+                <p class="mb-4 mt-0.5 text-sm text-slate-500">Observations drawn directly from the numbers on this page.</p>
+                <ul id="au-insights-body" class="space-y-3"></ul>
+                <p class="mt-5 border-t border-slate-100 pt-3 text-xs text-slate-400">Counts are clicks, not unique visitors. Cutlink doesn't currently track demographics or returning visitors, so they aren't shown.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
       <section id="custom-domains" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <p>domain</p>
       </section>
-      <section id="campaigns" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <p>campaigns</p>
+
+      <section id="campaigns" class="hidden space-y-5" aria-labelledby="cm-title">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 id="cm-title" class="text-xl font-semibold tracking-tight text-slate-900">Campaigns</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Create, organize, and track your marketing campaigns.</p>
+          </div>
+          <button id="cm-create" type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Create campaign
+          </button>
+        </div>
+
+        <!-- Shown by JS only when no data source has been connected yet -->
+        <div id="cm-notice" class="hidden items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+          <svg class="mt-0.5 h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <span>Campaigns aren't connected to your backend yet, so no saved campaigns can be shown.</span>
+        </div>
+
+        <div id="cm-status" class="sr-only" role="status" aria-live="polite"></div>
+
+        <!-- Summary cards (values filled by JS) -->
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Total campaigns</p>
+            <p id="cm-stat-total" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Total campaign clicks</p>
+            <p id="cm-stat-clicks" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Active campaigns</p>
+            <p id="cm-stat-active" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+            <p id="cm-stat-active-sub" class="mt-0.5 text-xs text-slate-400"></p>
+          </div>
+        </div>
+
+        <!-- List surface -->
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+
+          <!-- Loading (static placeholders, not data) -->
+          <div id="cm-loading" class="hidden divide-y divide-slate-100" role="status" aria-live="polite">
+            <span class="sr-only">Loading campaigns…</span>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-32 rounded bg-slate-200"></div><div class="hidden h-3.5 w-28 rounded bg-slate-100 sm:block"></div><div class="hidden h-3.5 w-24 rounded bg-slate-100 md:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-40 rounded bg-slate-200"></div><div class="hidden h-3.5 w-28 rounded bg-slate-100 sm:block"></div><div class="hidden h-3.5 w-24 rounded bg-slate-100 md:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-28 rounded bg-slate-200"></div><div class="hidden h-3.5 w-28 rounded bg-slate-100 sm:block"></div><div class="hidden h-3.5 w-24 rounded bg-slate-100 md:block"></div><div class="ml-auto h-5 w-10 rounded-full bg-slate-100"></div></div>
+          </div>
+
+          <!-- Error -->
+          <div id="cm-error" class="hidden px-6 py-16 text-center" role="alert">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+            </div>
+            <h3 class="mt-3 text-sm font-semibold text-slate-900">We couldn't load your campaigns</h3>
+            <p id="cm-error-msg" class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Check your connection and try again.</p>
+            <button id="cm-retry" type="button" class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Try again</button>
+          </div>
+
+          <!-- Empty -->
+          <div id="cm-empty" class="hidden px-6 py-16 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+              <svg class="h-6 w-6" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17V3.5M5 4h9.5l-2 3.25 2 3.25H5"/></svg>
+            </div>
+            <h3 class="mt-4 text-base font-semibold text-slate-900">No campaigns yet</h3>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Campaigns tag your links with a source, medium and name, so you can see which channels bring in clicks.</p>
+            <button id="cm-empty-create" type="button" class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+              Create your first campaign
+            </button>
+          </div>
+
+          <!-- Table (sm and up) + cards (mobile), both rendered from the same data -->
+          <div id="cm-table-wrap" class="hidden">
+            <div class="hidden overflow-x-auto sm:block">
+              <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
+                  <tr>
+                    <th scope="col" class="whitespace-nowrap px-5 py-2.5">Campaign name</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5">Short link</th>
+                    <th scope="col" class="hidden whitespace-nowrap px-4 py-2.5 md:table-cell">Source / medium</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5 text-right">Clicks</th>
+                    <th scope="col" class="hidden whitespace-nowrap px-4 py-2.5 lg:table-cell">Date created</th>
+                    <th scope="col" class="whitespace-nowrap px-5 py-2.5 text-right"><span class="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="cm-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+            <ul id="cm-cards" class="divide-y divide-slate-100 sm:hidden"></ul>
+          </div>
+        </div>
+
+        <div id="cm-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+
+        <!-- Create campaign dialog -->
+        <dialog id="cm-dialog" aria-labelledby="cm-dialog-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[90vh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 id="cm-dialog-title" class="text-base font-semibold text-slate-900">Create campaign</h3>
+              <button type="button" data-cm-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+
+            <!-- Step 1: form -->
+            <form id="cm-form" novalidate class="flex min-h-0 flex-1 flex-col">
+              <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                <div>
+                  <label for="cm-name" class="mb-1.5 block text-sm font-medium text-slate-700">Campaign name</label>
+                  <input id="cm-name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Black Friday 2026" aria-describedby="cm-name-error"
+                    class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                  <p id="cm-name-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+                </div>
+                <div>
+                  <label for="cm-url" class="mb-1.5 block text-sm font-medium text-slate-700">Destination URL</label>
+                  <input id="cm-url" name="url" type="url" inputmode="url" autocomplete="off" placeholder="https://example.com/offer" aria-describedby="cm-url-error"
+                    class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                  <p id="cm-url-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label for="cm-source" class="mb-1.5 block text-sm font-medium text-slate-700">UTM source</label>
+                    <input id="cm-source" name="source" type="text" list="cm-source-options" autocomplete="off" placeholder="e.g. instagram" aria-describedby="cm-source-error"
+                      class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                    <datalist id="cm-source-options"><option value="instagram"><option value="facebook"><option value="google"><option value="linkedin"><option value="x"><option value="newsletter"></datalist>
+                    <p id="cm-source-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+                  </div>
+                  <div>
+                    <label for="cm-medium" class="mb-1.5 block text-sm font-medium text-slate-700">UTM medium</label>
+                    <input id="cm-medium" name="medium" type="text" list="cm-medium-options" autocomplete="off" placeholder="e.g. social" aria-describedby="cm-medium-error"
+                      class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                    <datalist id="cm-medium-options"><option value="social"><option value="email"><option value="cpc"><option value="referral"><option value="qr"></datalist>
+                    <p id="cm-medium-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+                  </div>
+                </div>
+                <div>
+                  <label for="cm-campaign" class="mb-1.5 block text-sm font-medium text-slate-700">UTM campaign identifier</label>
+                  <input id="cm-campaign" name="campaign" type="text" autocomplete="off" placeholder="e.g. black-friday-2026" aria-describedby="cm-campaign-hint cm-campaign-error"
+                    class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                  <p id="cm-campaign-hint" class="mt-1.5 text-xs text-slate-400">Letters, numbers, hyphens and underscores. No spaces.</p>
+                  <p id="cm-campaign-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+                </div>
+                <p id="cm-form-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+              </div>
+              <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+                <button type="button" data-cm-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+                <button id="cm-submit" type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
+                  <svg id="cm-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                  <span id="cm-submit-label">Generate campaign link</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Step 2: result (shown only when saving isn't connected) -->
+            <div id="cm-result" class="hidden min-h-0 flex-1 flex-col">
+              <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                <div>
+                  <label for="cm-result-url" class="mb-1.5 block text-sm font-medium text-slate-700">Tagged destination URL</label>
+                  <div class="flex gap-2">
+                    <input id="cm-result-url" type="text" readonly class="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                    <button id="cm-result-copy" type="button" class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Copy</button>
+                  </div>
+                </div>
+                <p id="cm-result-replaced" class="hidden rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">This URL already had UTM parameters. They were replaced with the values you entered.</p>
+                <p class="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">Nothing was saved and no short link was created, because campaign saving isn't connected to your backend yet. This is the destination URL with your UTM parameters added.</p>
+              </div>
+              <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+                <button type="button" data-cm-close class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:h-9">Done</button>
+              </div>
+            </div>
+          </div>
+        </dialog>
       </section>
+
+
       <section id="tags-label" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <p>tags</p>
       </section>
@@ -978,6 +1290,8 @@
   <script src="/links-view.js" type="module" defer></script>
   <script src="/qr-view.js" type="module" defer></script>
   <script src="/analytics.js" type="module" defer></script>
+  <script src="/audiences.js" type="module" defer></script>
+  <script src="/campaigns.js" type="module" defer></script>
   <script src="/googleBtn.js" type="module" defer></script>
   <script src="/codeVerify.js" type="module" defer></script>
   <script src="/dashboard-shorturl.js" type="module" defer></script>

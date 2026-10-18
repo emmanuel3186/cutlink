@@ -154,6 +154,7 @@ app.get('/api/user/links', requireAuth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
     const linksWithClickCounts = await URLModel.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(req.user.userId) } },
       { $sort: { createdAt: -1 } },
@@ -167,6 +168,7 @@ app.get('/api/user/links', requireAuth, async (req, res) => {
       },
       {
         $project: {
+          _id: 1,
           longUrl: 1,
           shortUrl: 1,
           campaign: 1,
@@ -191,6 +193,7 @@ app.get('/api/user/links', requireAuth, async (req, res) => {
       },
       {
         $project: {
+          _id: 1,
           longUrl: 1,
           shortUrl: 1,
           campaign: 1,
@@ -213,12 +216,80 @@ app.get('/api/user/links', requireAuth, async (req, res) => {
         }
       }
     ]);
+    const now = new Date();
+    const currentPeriodStart = new Date(now);
+    currentPeriodStart.setDate(currentPeriodStart.getDate() - 7);
+    const previousPeriodStart = new Date(now);
+    previousPeriodStart.setDate(previousPeriodStart.getDate() - 14);
+
+    const linkIds = linksWithClickCounts.map(link => link._id);
+    const periodClicks = await Click.aggregate([
+      {
+        $match: {
+          urlId: { $in: linkIds },
+          createdAt: { $gte: previousPeriodStart, $lt: now }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            urlId: "$urlId",
+            period: {
+              $cond: [
+                { $gte: ["$createdAt", currentPeriodStart] },
+                "current",
+                "previous"
+              ]
+            }
+          },
+          clicks: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const growthByLink = new Map();
+    for (const item of periodClicks) {
+      const linkId = item._id.urlId.toString();
+
+      if (!growthByLink.has(linkId)) {
+        growthByLink.set(linkId, { current: 0, previous: 0 });
+      }
+
+      growthByLink.get(linkId)[item._id.period] = item.clicks;
+    }
+    for (const link of linksWithClickCounts) {
+      const counts = growthByLink.get(link._id.toString()) || {
+        current: 0,
+        previous: 0
+      };
+
+      const difference = counts.current - counts.previous;
+
+      let growth = null;
+
+      if (counts.previous > 0) {
+        growth = Number(((difference / counts.previous) * 100).toFixed(1));
+      } else if (counts.current > 0) {
+        growth = 100;
+      }
+
+      link.clickDifference = difference;
+      link.percentageChange = growth;
+      link.growth = growth;
+    }
+    const allClicks = await Click.find({
+      urlId: { $in: linksWithClickCounts.map(link => link._id) }
+    }).select('ipAddress userAgent');
+    const totalUniqueVisitors = new Set(
+      allClicks.map(click => `${click.ipAddress}-${click.userAgent}`)
+    ).size;
     return res.json({ 
       success: true, 
       user: {
         email: user.email,
         isPremium: user.isPremium
       },
+      uniqueVisitors: totalUniqueVisitors,
       links: linksWithClickCounts 
     });
   } 
@@ -646,8 +717,13 @@ app.get('/api/user/profile', async (req, res) => {
 
 
 const generateShortCode = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
+
 app.post('/api/shorten', async (req, res) => {
-  let { longUrl } = req.body;
+  let { longUrl, campaign } = req.body;
+
+  campaign = typeof campaign === 'string' ? campaign.trim() : null;
+  if (!campaign) campaign = null;
+
   if (!longUrl) {
     return res.status(400).json({ success: false, message: 'Please enter a link to shorten.' });
   }
@@ -667,9 +743,10 @@ app.post('/api/shorten', async (req, res) => {
     }
   }
   try {
-    let urlRecord = await URLModel.findOne({ 
-      longUrl: longUrl, 
-      userId: currentUserId 
+    let urlRecord = await URLModel.findOne({
+      longUrl: longUrl,
+      userId: currentUserId,
+      campaign: campaign
     });
     if (urlRecord) {
       const shortLink = `${BASE_URL}/${urlRecord.shortUrl}`;
@@ -680,10 +757,11 @@ app.post('/api/shorten', async (req, res) => {
       });
     }
     const shortCode = generateShortCode();
-    urlRecord = new URLModel({ 
-      longUrl: longUrl, 
-      shortUrl: shortCode, 
-      userId: currentUserId 
+    urlRecord = new URLModel({
+      longUrl: longUrl,
+      shortUrl: shortCode,
+      userId: currentUserId,
+      campaign: campaign
     });
     await urlRecord.save();
     const shortLink = `${BASE_URL}/${urlRecord.shortUrl}`;
@@ -1035,6 +1113,97 @@ app.get('/api/analytics', requireAuth, async (req, res) => {
     });
   }
 });
+
+
+app.get('/api/campaigns', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const links = await URLModel.find({
+      userId,
+      campaign: { $exists: true, $nin: [null, ''] }
+    })
+      .select('_id shortUrl longUrl campaign createdAt expiresAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const linkIds = links.map(link => link._id);
+
+    const clickCounts = await Click.aggregate([
+      {
+        $match: {
+          urlId: { $in: linkIds }
+        }
+      },
+      {
+        $group: {
+          _id: '$urlId',
+          clicks: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const clicksByLink = new Map(
+      clickCounts.map(item => [
+        String(item._id),
+        item.clicks
+      ])
+    );
+
+    const campaigns = links.map(link => {
+      let source = '';
+      let medium = '';
+      let utmCampaign = '';
+
+      try {
+        const destination = new URL(link.longUrl);
+
+        source = destination.searchParams.get('utm_source') || '';
+        medium = destination.searchParams.get('utm_medium') || '';
+        utmCampaign =
+          destination.searchParams.get('utm_campaign') || '';
+      } catch {
+        // Keep the UTM fields empty if the URL cannot be parsed.
+      }
+
+      const expired =
+        link.expiresAt && new Date(link.expiresAt) <= new Date();
+
+      return {
+        id: String(link._id),
+        name: link.campaign,
+        shortUrl: `${BASE_URL}/${link.shortUrl}`,
+        source,
+        medium,
+        utmCampaign,
+        clicks: clicksByLink.get(String(link._id)) || 0,
+        createdAt: link.createdAt,
+        status: expired ? 'expired' : 'active'
+      };
+    });
+
+    return res.json({
+      success: true,
+      campaigns,
+      totalCampaigns: campaigns.length,
+      totalClicks: campaigns.reduce(
+        (total, campaign) => total + campaign.clicks,
+        0
+      ),
+      activeCampaigns: campaigns.filter(
+        campaign => campaign.status === 'active'
+      ).length
+    });
+  } catch (error) {
+    console.error('Fetch campaigns error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve campaigns.'
+    });
+  }
+});
+
 
 app.get('/:code', async (req, res) => {
   const { code } = req.params; 

@@ -3,19 +3,8 @@
   const USE_MOCK = false;             // <- set to false once your endpoint exists
   const API_URL = '/api/analytics';  // <- ASSUMED path; change to your real route
   const UPGRADE_URL = null;          // <- where "Upgrade plan" goes (null = fires 'cutlink:upgrade')
-  const LINKS_NAV_SELECTOR = null;   // <- e.g. '[data-view="links"]' so "View All Links" clicks your sidebar item
+  const LINKS_NAV_SELECTOR = '[data-nav="links"]';   // <- e.g. '[data-view="links"]' so "View All Links" clicks your sidebar item
   const STALE_AFTER_MS = 60000;      // refetch when the tab is reopened after this long
-
-  /* =====================================================================
-   * 2. DATA SERVICE
-   * Normalized shape returned by getAnalytics():
-   * {
-   *   series:         [{ date: 'YYYY-MM-DD', clicks }],
-   *   previousSeries: [{ date, clicks }] | null,   // same length, the period just before
-   *   sources / devices / browsers / locations: [{ label, clicks }],
-   *   topLinks:       [{ id, shortUrl, originalUrl, clicks }]
-   * }
-   * ===================================================================== */
   class PlanLimitError extends Error {
     constructor(message) { super(message || "This view isn't included in your plan."); this.code = 'PLAN_LIMIT'; }
   }
@@ -28,6 +17,7 @@
   function normalize(raw) {
     const prev = raw.previousSeries || raw.previous || null;
     return {
+      totalClicks: Number(raw.totalClicks) || 0,
       series: pointList(raw.series || raw.timeseries),
       previousSeries: prev ? pointList(prev) : null,
       sources: labelList(raw.sources),
@@ -61,63 +51,9 @@
     if (!res.ok) throw new Error(`Request failed (${res.status})`);
     return normalize(await res.json());
   }
-
-  /* ---------- TEMPORARY MOCK: delete this block when the API is live ---------- */
-  const MOCK_MODE = 'data';        // 'data' | 'empty' | 'error'
-  const MOCK_LOCKED_RANGES = [];   // e.g. ['all'] to preview the plan-limit state
-  const MOCK_LINKS = [
-    ['launch', 'https://example.com/product-launch'], ['menu', 'https://example.com/menu'],
-    ['promo', 'https://example.org/blog/seasonal-promo'], ['event', 'https://example.net/events/meetup'],
-    ['docs', 'https://docs.example.com/guides/getting-started'],
-  ].map(([code, originalUrl], i) => ({ id: `mock${i}`, shortUrl: `${window.location.host}/${code}`, originalUrl }));
-
-  const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-  function seeded(str) { // small deterministic PRNG so the same filters give the same numbers
-    let a = 0; for (const c of str) a = (a * 31 + c.charCodeAt(0)) | 0;
-    return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  }
-  const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-  function mockSeries(days, endOffset, rnd, scale) {
-    const out = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i - endOffset);
-      const weekend = d.getDay() === 0 || d.getDay() === 6 ? 0.7 : 1;
-      out.push({ date: isoDay(d), clicks: Math.max(0, Math.round(scale * (18 + rnd() * 42) * weekend)) });
-    }
-    return out;
-  }
-  function split(total, labels, rnd) { // divide a total across labels, descending, summing exactly
-    const w = labels.map(() => 0.3 + rnd());
-    const sum = w.reduce((a, b) => a + b, 0);
-    const counts = w.map((x) => Math.floor((total * x) / sum));
-    counts[0] += total - counts.reduce((a, b) => a + b, 0);
-    return labels.map((label, i) => ({ label, clicks: counts[i] })).sort(byClicks);
-  }
-
-  async function mockAnalytics({ range, linkId }) {
-    await delay(800);
-    if (MOCK_MODE === 'error') throw new Error('Mock error');
-    if (MOCK_LOCKED_RANGES.includes(range)) throw new PlanLimitError('Your plan includes analytics for up to 30 days.');
-    const days = RANGE_DAYS[range] || 180;
-    const rnd = seeded(`${range}|${linkId}`);
-    const scale = linkId ? 0.25 : 1;
-    const series = mockSeries(days, 0, rnd, MOCK_MODE === 'empty' ? 0 : scale);
-    const previousSeries = RANGE_DAYS[range] ? mockSeries(days, days, rnd, MOCK_MODE === 'empty' ? 0 : scale * 0.85) : null;
-    const total = series.reduce((n, p) => n + p.clicks, 0);
-    if (total === 0) return normalize({ series, previousSeries });
-    const links = linkId ? MOCK_LINKS.filter((l) => l.id === linkId) : MOCK_LINKS;
-    const shares = split(total, links.map((l) => l.id), rnd);
-    return normalize({
-      series, previousSeries,
-      sources: split(total, ['Direct', 'Google', 'Instagram', 'WhatsApp', 'X', 'Facebook', 'LinkedIn'], rnd),
-      devices: split(total, ['Mobile', 'Desktop', 'Tablet'], rnd),
-      browsers: split(total, ['Chrome', 'Safari', 'Firefox', 'Edge', 'Samsung Internet'], rnd),
-      locations: split(total, ['Nigeria', 'United States', 'United Kingdom', 'Ghana', 'Canada', 'Kenya', 'South Africa'], rnd),
-      topLinks: shares.map((s) => ({ ...links.find((l) => l.id === s.label), clicks: s.clicks })),
-    });
-  }
-  /* ---------- END TEMPORARY MOCK ---------- */
+  window.CutlinkAnalytics = {
+    fetchFromApi
+  };
 
   const stripProto = (u) => (u || '').replace(/^https?:\/\//i, '');
 
@@ -511,7 +447,7 @@
         d.topLinks.forEach((l) => rows.push(['Top link', displayShort(l.shortUrl), l.clicks, '']));
         const csv = '\ufeff' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
         const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-        const a = h('a'); a.href = url; a.download = `cutlink-analytics-${state.range}-${isoDay(new Date())}.csv`;
+        const a = h('a'); a.href = url;a.download = `cutlink-analytics-${state.range}-${new Date().toISOString().slice(0, 10)}.csv`;
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         toast('CSV downloaded');

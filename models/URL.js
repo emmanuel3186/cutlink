@@ -16,6 +16,10 @@ const urlSchema = new mongoose.Schema({
     required: true,
     unique: true,
     index: true
+  },campaign: {
+    type: String,
+    trim: true,
+    default: null
   },
   createdAt: {
     type: Date,
