@@ -1114,7 +1114,6 @@ app.get('/api/analytics', requireAuth, async (req, res) => {
   }
 });
 
-
 app.get('/api/campaigns', requireAuth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -1142,6 +1141,38 @@ app.get('/api/campaigns', requireAuth, async (req, res) => {
         }
       }
     ]);
+    
+    const sourceBreakdown = await Click.aggregate([
+      {
+        $match: {
+          urlId: { $in: linkIds }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            urlId: '$urlId',
+            source: '$utmSource'
+          },
+          clicks: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          urlId: '$_id.urlId',
+          source: {
+            $ifNull: ['$_id.source', 'Unknown']
+          },
+          clicks: 1
+        }
+      },
+      {
+        $sort: {
+          clicks: -1
+        }
+      }
+    ]);
 
     const clicksByLink = new Map(
       clickCounts.map(item => [
@@ -1149,6 +1180,21 @@ app.get('/api/campaigns', requireAuth, async (req, res) => {
         item.clicks
       ])
     );
+
+    const sourcesByLink = new Map();
+
+    sourceBreakdown.forEach(item => {
+      const key = String(item.urlId);
+
+      if (!sourcesByLink.has(key)) {
+        sourcesByLink.set(key, []);
+      }
+
+      sourcesByLink.get(key).push({
+        source: item.source,
+        clicks: item.clicks
+      });
+    });
 
     const campaigns = links.map(link => {
       let source = '';
@@ -1177,6 +1223,7 @@ app.get('/api/campaigns', requireAuth, async (req, res) => {
         medium,
         utmCampaign,
         clicks: clicksByLink.get(String(link._id)) || 0,
+        sources: sourcesByLink.get(String(link._id)) || [],
         createdAt: link.createdAt,
         status: expired ? 'expired' : 'active'
       };
@@ -1235,9 +1282,10 @@ app.get('/:code', async (req, res) => {
     } 
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
     const referrer = req.headers['referer'] || 'Unknown';
-    const utmSource = req.query.utm_source || null;
-    const utmMedium = req.query.utm_medium || null;
-    const utmCampaign = req.query.utm_campaign || null;
+    const destinationUrl = new URL(urlRecord.longUrl);
+    const utmSource = req.query.utm_source ||destinationUrl.searchParams.get('utm_source') ||null;
+    const utmMedium = req.query.utm_medium ||destinationUrl.searchParams.get('utm_medium') ||null;const utmCampaign = req.query.utm_campaign ||destinationUrl.searchParams.ge('utm_campaign') ||
+    null;
     const country = await getCountryCode(req);
     const clickLog = new Click({
       urlId: urlRecord._id,

@@ -33,6 +33,7 @@ function normalize(raw) {
     source: String(raw.source ?? ''),
     medium: String(raw.medium ?? ''),
     clicks: Number(raw.clicks) || 0,
+    sources: Array.isArray(raw.sources) ? raw.sources : [],
     createdAt: raw.createdAt ?? null,
     status: raw.status != null ? String(raw.status) : null,
   };
@@ -145,6 +146,41 @@ export function initCampaignsTab(options = {}) {
     return s;
   }
 
+  function renderSourceBreakdown(c) {
+    const wrap = h('div', 'mt-2 space-y-1');
+
+    if (!c.sources.length) {
+      wrap.append(
+        h('p', 'text-xs text-slate-400', 'No source data yet')
+      );
+      return wrap;
+    }
+
+    c.sources.forEach(item => {
+      const row = h(
+        'div',
+        'flex items-center justify-between gap-3 text-xs'
+      );
+
+      row.append(
+        h(
+          'span',
+          'truncate text-slate-500',
+          item.source || 'Unknown'
+        ),
+        h(
+          'span',
+          'shrink-0 font-medium tabular-nums text-slate-700',
+          `${Number(item.clicks) || 0} clicks`
+        )
+      );
+
+      wrap.append(row);
+    });
+
+    return wrap;
+  }
+
   function actionButtons(c, mobile) {
     const out = [];
     const copy = h('button', mobile ? LIST_BTN : ICON_BTN);
@@ -173,8 +209,9 @@ export function initCampaignsTab(options = {}) {
     const l = h('span', 'inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600');
     l.insertAdjacentHTML('beforeend', ICON.link); l.append(shortDisplay(c.shortUrl));
     link.append(l);
-    const sm = h('td', 'hidden whitespace-nowrap px-4 py-3.5 align-middle md:table-cell'); sm.append(srcMedium(c));
-    const clicks = h('td', 'whitespace-nowrap px-4 py-3.5 text-right align-middle text-sm font-semibold tabular-nums text-slate-900', nf.format(c.clicks));
+    const sm = h('td','hidden min-w-[10rem] px-4 py-3.5 align-middle md:table-cell');
+    sm.append(srcMedium(c), renderSourceBreakdown(c));
+    const clicks = h('td','whitespace-nowrap px-4 py-3.5 text-right align-middle text-sm font-semibold tabular-nums text-slate-900', nf.format(c.clicks));
     const date = h('td', 'hidden whitespace-nowrap px-4 py-3.5 align-middle text-xs text-slate-500 lg:table-cell', fmtDate(c.createdAt));
     const act = h('td', 'whitespace-nowrap px-5 py-3.5 text-right align-middle');
     const wrap = h('div', 'flex items-center justify-end gap-1'); wrap.append(...actionButtons(c, false)); act.append(wrap);
@@ -193,11 +230,13 @@ export function initCampaignsTab(options = {}) {
     const clicks = h('div', 'shrink-0 text-right');
     clicks.append(h('p', 'text-sm font-semibold tabular-nums text-slate-900', nf.format(c.clicks)), h('p', 'text-xs text-slate-500', c.clicks === 1 ? 'click' : 'clicks'));
     top.append(info, clicks);
-    const meta = h('div', 'flex items-center justify-between text-xs text-slate-500');
-    const sm = h('span'); sm.append(c.source || '—', h('span', 'px-1 text-slate-300', '/'), c.medium || '—');
+    const meta = h('div','flex items-center justify-between text-xs text-slate-500');
+    const sm = h('span');
+    sm.append(c.source || '—',h('span', 'px-1 text-slate-300', '/'),c.medium || '—');
     meta.append(sm, h('span', null, fmtDate(c.createdAt)));
+    const breakdown = renderSourceBreakdown(c);
     const acts = h('div', 'flex gap-2'); acts.append(...actionButtons(c, true));
-    li.append(top, meta, acts);
+    li.append(top, meta, breakdown, acts);
     return li;
   }
 
