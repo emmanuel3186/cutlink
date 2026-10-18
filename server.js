@@ -1180,9 +1180,7 @@ app.get('/api/campaigns', requireAuth, async (req, res) => {
         item.clicks
       ])
     );
-
     const sourcesByLink = new Map();
-
     sourceBreakdown.forEach(item => {
       const key = String(item.urlId);
 
@@ -1195,40 +1193,93 @@ app.get('/api/campaigns', requireAuth, async (req, res) => {
         clicks: item.clicks
       });
     });
-
-    const campaigns = links.map(link => {
-      let source = '';
-      let medium = '';
-      let utmCampaign = '';
-
-      try {
-        const destination = new URL(link.longUrl);
-
-        source = destination.searchParams.get('utm_source') || '';
-        medium = destination.searchParams.get('utm_medium') || '';
-        utmCampaign =
-          destination.searchParams.get('utm_campaign') || '';
-      } catch {
-        // Keep the UTM fields empty if the URL cannot be parsed.
+    const campaignGroups = new Map();
+    for (const link of links) {
+      const campaignName = (link.campaign || '').trim();
+      // Group matching campaign names without case sensitivity.
+      const groupKey = campaignName.toLowerCase();
+      if (!campaignGroups.has(groupKey)) {
+        let utmCampaign = '';
+        try {
+          const destination = new URL(link.longUrl);
+          utmCampaign =
+            destination.searchParams.get('utm_campaign') || '';
+        } catch {
+          // Leave UTM campaign empty if the URL is invalid.
+        }
+        campaignGroups.set(groupKey, {
+          id: String(link._id),
+          name: campaignName,
+          shortUrl: `${BASE_URL}/${link.shortUrl}`,
+          utmCampaign,
+          links: [],
+          clicks: 0,
+          sources: [],
+          createdAt: link.createdAt,
+          status: 'active'
+        });
       }
-
-      const expired =
-        link.expiresAt && new Date(link.expiresAt) <= new Date();
-
-      return {
-        id: String(link._id),
-        name: link.campaign,
+      const group = campaignGroups.get(groupKey);
+      const linkId = String(link._id);
+      const linkClicks = clicksByLink.get(linkId) || 0;
+      // Preserve every short link belonging to this campaign.
+      group.links.push({
+        id: linkId,
         shortUrl: `${BASE_URL}/${link.shortUrl}`,
-        source,
-        medium,
-        utmCampaign,
-        clicks: clicksByLink.get(String(link._id)) || 0,
-        sources: sourcesByLink.get(String(link._id)) || [],
-        createdAt: link.createdAt,
-        status: expired ? 'expired' : 'active'
-      };
-    });
+        clicks: linkClicks,
+        source: (() => {
+          try {
+            return new URL(link.longUrl)
+              .searchParams.get('utm_source') || '';
+          } catch {
+            return '';
+          }
+        })(),
+        medium: (() => {
+          try {
+            return new URL(link.longUrl)
+              .searchParams.get('utm_medium') || '';
+          } catch {
+            return '';
+          }
+        })()
+      });
+      group.clicks += linkClicks;
+      if (link.createdAt > group.createdAt) {
+        group.createdAt = link.createdAt;
+      }
+      // Combine source clicks from every link in this campaign.
+      const linkSources = sourcesByLink.get(linkId) || [];
+      for (const item of linkSources) {
+        const existing = group.sources.find(
+          source => source.source === item.source
+        );
 
+        if (existing) {
+          existing.clicks += item.clicks;
+        } else {
+          group.sources.push({
+            source: item.source,
+            clicks: item.clicks
+          });
+        }
+      }
+    }
+    for (const group of campaignGroups.values()) {
+      group.status = group.links.some(campaignLink => {
+        const originalLink = links.find(
+          link => String(link._id) === campaignLink.id
+        );
+
+        return originalLink && (
+          !originalLink.expiresAt ||
+          new Date(originalLink.expiresAt) > new Date()
+        );
+      })
+        ? 'active'
+        : 'expired';
+    }
+    const campaigns = Array.from(campaignGroups.values());
     return res.json({
       success: true,
       campaigns,

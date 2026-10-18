@@ -34,6 +34,7 @@ function normalize(raw) {
     medium: String(raw.medium ?? ''),
     clicks: Number(raw.clicks) || 0,
     sources: Array.isArray(raw.sources) ? raw.sources : [],
+    links: Array.isArray(raw.links) ? raw.links : [],
     createdAt: raw.createdAt ?? null,
     status: raw.status != null ? String(raw.status) : null,
   };
@@ -200,45 +201,147 @@ export function initCampaignsTab(options = {}) {
     return out;
   }
 
+  function renderCampaignLinks(c) {
+    const wrap = h('div', 'space-y-2');
+
+    const links = c.links.length
+      ? c.links
+      : [{
+          shortUrl: c.shortUrl,
+          source: c.source,
+          medium: c.medium,
+          clicks: c.clicks
+        }];
+
+    links.forEach(link => {
+      const item = h('div', 'min-w-0');
+
+      const shortLink = h(
+        'a',
+        'block break-all text-sm font-medium text-indigo-600 hover:text-indigo-800',
+        shortDisplay(link.shortUrl)
+      );
+
+      shortLink.href = link.shortUrl;
+      shortLink.target = '_blank';
+      shortLink.rel = 'noopener noreferrer';
+
+      const details = h(
+        'p',
+        'mt-0.5 text-xs text-slate-500',
+        `${link.source || 'Unknown'} / ${link.medium || '—'} · ${nf.format(Number(link.clicks) || 0)} ${(Number(link.clicks) || 0) === 1 ? 'click' : 'clicks'}`
+      );
+
+      item.append(shortLink, details);
+      wrap.append(item);
+    });
+
+    return wrap;
+  }
+
   function buildRow(c) {
-    const tr = h('tr', 'transition-colors duration-150 hover:bg-slate-50/70');
+    const tr = h(
+      'tr',
+      'transition-colors duration-150 hover:bg-slate-50/70'
+    );
+
     const name = h('td', 'max-w-[16rem] px-5 py-3.5 align-middle');
-    const nm = h('div', 'truncate text-sm font-medium text-slate-900', displayName(c)); nm.title = displayName(c);
+    const nm = h(
+      'div',
+      'truncate text-sm font-medium text-slate-900',
+      displayName(c)
+    );
+    nm.title = displayName(c);
     name.append(nm);
-    const link = h('td', 'whitespace-nowrap px-4 py-3.5 align-middle');
-    const l = h('span', 'inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600');
-    l.insertAdjacentHTML('beforeend', ICON.link); l.append(shortDisplay(c.shortUrl));
-    link.append(l);
-    const sm = h('td','hidden min-w-[10rem] px-4 py-3.5 align-middle md:table-cell');
-    sm.append(srcMedium(c), renderSourceBreakdown(c));
-    const clicks = h('td','whitespace-nowrap px-4 py-3.5 text-right align-middle text-sm font-semibold tabular-nums text-slate-900', nf.format(c.clicks));
-    const date = h('td', 'hidden whitespace-nowrap px-4 py-3.5 align-middle text-xs text-slate-500 lg:table-cell', fmtDate(c.createdAt));
+
+    const link = h('td', 'min-w-[14rem] px-4 py-3.5 align-middle');
+    link.append(renderCampaignLinks(c));
+
+    const sm = h(
+      'td',
+      'hidden min-w-[10rem] px-4 py-3.5 align-middle md:table-cell'
+    );
+    sm.append(renderSourceBreakdown(c));
+
+    const clicks = h(
+      'td',
+      'whitespace-nowrap px-4 py-3.5 text-right align-middle text-sm font-semibold tabular-nums text-slate-900',
+      nf.format(c.clicks)
+    );
+
+    const date = h(
+      'td',
+      'hidden whitespace-nowrap px-4 py-3.5 align-middle text-xs text-slate-500 lg:table-cell',
+      fmtDate(c.createdAt)
+    );
+
     const act = h('td', 'whitespace-nowrap px-5 py-3.5 text-right align-middle');
-    const wrap = h('div', 'flex items-center justify-end gap-1'); wrap.append(...actionButtons(c, false)); act.append(wrap);
+    const wrap = h('div', 'flex items-center justify-end gap-1');
+    wrap.append(...actionButtons(c, false));
+    act.append(wrap);
+
     tr.append(name, link, sm, clicks, date, act);
+
     return tr;
   }
 
   function buildCard(c) {
     const li = h('li', 'space-y-3 p-4');
+
     const top = h('div', 'flex items-start justify-between gap-3');
     const info = h('div', 'min-w-0');
-    info.append(h('p', 'truncate text-sm font-semibold text-slate-900', displayName(c)));
-    const l = h('p', 'mt-0.5 flex items-center gap-1.5 break-all text-sm font-medium text-indigo-600');
-    l.insertAdjacentHTML('beforeend', ICON.link); l.append(shortDisplay(c.shortUrl));
-    info.append(l);
+
+    info.append(
+      h('p', 'truncate text-sm font-semibold text-slate-900', displayName(c))
+    );
+
     const clicks = h('div', 'shrink-0 text-right');
-    clicks.append(h('p', 'text-sm font-semibold tabular-nums text-slate-900', nf.format(c.clicks)), h('p', 'text-xs text-slate-500', c.clicks === 1 ? 'click' : 'clicks'));
+    clicks.append(
+      h(
+        'p',
+        'text-sm font-semibold tabular-nums text-slate-900',
+        nf.format(c.clicks)
+      ),
+      h(
+        'p',
+        'text-xs text-slate-500',
+        c.clicks === 1 ? 'click' : 'clicks'
+      )
+    );
+
     top.append(info, clicks);
-    const meta = h('div','flex items-center justify-between text-xs text-slate-500');
-    const sm = h('span');
-    sm.append(c.source || '—',h('span', 'px-1 text-slate-300', '/'),c.medium || '—');
-    meta.append(sm, h('span', null, fmtDate(c.createdAt)));
-    const breakdownSection = h('div','rounded-lg bg-slate-50 p-3');
-    breakdownSection.append(h('p','mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500','Clicks by source'),
-    renderSourceBreakdown(c));
-    const acts = h('div', 'flex gap-2'); acts.append(...actionButtons(c, true));
-    li.append(top, meta, breakdownSection, acts);
+
+    const linksSection = h('div', 'rounded-lg border border-slate-200 p-3');
+    linksSection.append(
+      h(
+        'p',
+        'mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500',
+        'Campaign links'
+      ),
+      renderCampaignLinks(c)
+    );
+
+    const breakdownSection = h('div', 'rounded-lg bg-slate-50 p-3');
+    breakdownSection.append(
+      h(
+        'p',
+        'mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500',
+        'Clicks by source'
+      ),
+      renderSourceBreakdown(c)
+    );
+
+    const date = h(
+      'p',
+      'text-xs text-slate-500',
+      `Created ${fmtDate(c.createdAt)}`
+    );
+
+    const acts = h('div', 'flex flex-wrap gap-2');
+    acts.append(...actionButtons(c, true));
+
+    li.append(top, linksSection, breakdownSection, date, acts);
+
     return li;
   }
 
