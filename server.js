@@ -1284,7 +1284,7 @@ app.get('/:code', async (req, res) => {
     const referrer = req.headers['referer'] || 'Unknown';
     const destinationUrl = new URL(urlRecord.longUrl);
     const utmSource = req.query.utm_source ||destinationUrl.searchParams.get('utm_source') ||null;
-    const utmMedium = req.query.utm_medium ||destinationUrl.searchParams.get('utm_medium') ||null;const utmCampaign = req.query.utm_campaign ||destinationUrl.searchParams.ge('utm_campaign') ||
+    const utmMedium = req.query.utm_medium ||destinationUrl.searchParams.get('utm_medium') ||null;const utmCampaign = req.query.utm_campaign ||destinationUrl.searchParams.get('utm_campaign') ||
     null;
     const country = await getCountryCode(req);
     const clickLog = new Click({
