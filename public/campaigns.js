@@ -261,7 +261,9 @@ export function initCampaignsTab(options = {}) {
       'td',
       'hidden min-w-[10rem] px-4 py-3.5 align-middle md:table-cell'
     );
-    sm.append(renderSourceBreakdown(c));
+    const sourceContent = h('div', 'min-w-0 space-y-1');
+    sourceContent.append(renderSourceBreakdown(c));
+    sm.append(sourceContent);
 
     const clicks = h(
       'td',
