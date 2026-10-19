@@ -148,7 +148,7 @@ export function initCampaignsTab(options = {}) {
   }
 
   function renderSourceBreakdown(c) {
-    const wrap = h('div', 'mt-2 space-y-1');
+    const wrap = h('div', 'min-w-0 space-y-1');
 
     if (!c.sources.length) {
       wrap.append(
