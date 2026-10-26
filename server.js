@@ -25,9 +25,19 @@ app.use(cors());
 app.use(express.json());
 const client = new OAuth2Client(process.env.CLIENT_ID);
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection failed:', err));
+const mongoUri = process.env.MONGO_URI;
+
+if (!mongoUri) {
+  throw new Error("MONGO_URI environment variable is missing");
+}
+
+try {
+  await mongoose.connect(mongoUri);
+  console.log("MongoDB connected successfully");
+} catch (err) {
+  console.error("MongoDB connection failed:", err);
+  throw err;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
