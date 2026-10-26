@@ -404,7 +404,9 @@ export function initDomainsTab({ api } = {}) {
     clearAddErrors();
     setAdding(false);
     els.addDialog.showModal();
-    els.domain.focus();
+    if (window.matchMedia('(min-width: 640px)').matches) {
+      els.domain.focus();
+    }
   }
 
   async function onAddSubmit(event) {
@@ -709,6 +711,16 @@ export function initDomainsTab({ api } = {}) {
   /* ---------- events (bound once, delegated where it makes sense) ---------- */
 
   els.add.addEventListener('click', openAdd);
+  document.querySelectorAll('#dm-add-form input, #dm-add-form select').forEach((input) => {
+    input.addEventListener('focus', () => {
+      setTimeout(() => {
+        input.scrollIntoView({
+          block: 'center',
+          behavior: 'smooth'
+        });
+      }, 300);
+    });
+  });
   els.emptyAdd.addEventListener('click', openAdd);
   els.retry.addEventListener('click', () => load());
   els.addForm.addEventListener('submit', onAddSubmit);

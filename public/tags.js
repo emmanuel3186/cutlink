@@ -245,7 +245,10 @@ export function initTagsTab(options = {}) {
     el.name.value = tag ? tag.name : '';
     selectColor(tag ? tag.color : PALETTE[0].key);
     showFieldError('name', ''); showFieldError('color', ''); setHidden(el.formError, true);
-    setSubmitting(false); open(el.formDialog); el.name.focus();
+    setSubmitting(false); open(el.formDialog); 
+    if (window.matchMedia('(min-width: 640px)').matches) {
+      el.name.focus();
+    }
   }
 
   async function submitForm(e) {
@@ -359,6 +362,16 @@ export function initTagsTab(options = {}) {
 
   /* ----- Events (all scoped to this section) ----- */
   el.create.addEventListener('click', () => openForm(null));
+  document.querySelectorAll('#tg-form input, #tg-form select').forEach((el) => {
+    el.addEventListener('focus', () => {
+      setTimeout(() => {
+        el.scrollIntoView({
+          block: 'center',
+          behavior: 'smooth'
+        });
+      }, 300);
+    });
+  });
   el.emptyCreate.addEventListener('click', () => openForm(null));
   el.retry.addEventListener('click', load);
   el.form.addEventListener('submit', submitForm);

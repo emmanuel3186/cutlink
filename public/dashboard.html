@@ -1172,29 +1172,29 @@
 
         <div id="dm-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
 
-        <!-- Add domain dialog -->
+        <!-- Add domain dialog -->    
         <dialog id="dm-add-dialog" aria-labelledby="dm-add-title"
-          class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
-          <form id="dm-add-form" novalidate class="flex max-h-[90vh] flex-col">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          class="mx-auto mt-3 mb-auto sm:my-auto w-[calc(100%-1.5rem)] max-w-md max-h-[80dvh] overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <form id="dm-add-form" novalidate class="flex max-h-[80dvh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4">
               <h3 id="dm-add-title" class="text-base font-semibold text-slate-900">Add domain</h3>
               <button type="button" data-dm-close-add class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
               </button>
             </div>
-            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+            <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 sm:space-y-4 sm:px-5 sm:py-5">
               <div>
                 <label for="dm-domain" class="mb-1.5 block text-sm font-medium text-slate-700">Domain or subdomain</label>
                 <input id="dm-domain" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="go.example.com"
                   aria-describedby="dm-domain-hint dm-domain-error"
-                  class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                  class="h-10 w-full rounded-lg border border-slate-200 px-3 text-base sm:text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
                 <p id="dm-domain-hint" class="mt-1.5 text-xs text-slate-400">Enter only the domain name, without https:// or a path.</p>
                 <p id="dm-domain-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
               </div>
               <p class="rounded-lg bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-600">You must own or control this domain and be able to edit its DNS records. After you add it, we'll show the DNS record to create. The domain stays unverified until CutLink's servers find that record.</p>
               <p id="dm-add-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
             </div>
-            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-3 sm:px-5 sm:py-3.5 sm:flex-row sm:justify-end">
               <button type="button" data-dm-close-add class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
               <button id="dm-add-submit" type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
                 <svg id="dm-add-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
@@ -1206,9 +1206,9 @@
 
         <!-- DNS instructions dialog (also opens right after a domain is registered) -->
         <dialog id="dm-dns-dialog" aria-labelledby="dm-dns-title"
-          class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
-          <div class="flex max-h-[90vh] flex-col">
-            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          class="mx-auto mt-3 mb-auto sm:my-auto w-[calc(100%-1.5rem)] max-w-2xl max-h-[80dvh] overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[80dvh] flex-col">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4">
               <div class="min-w-0">
                 <h3 id="dm-dns-title" class="text-base font-semibold text-slate-900">DNS setup</h3>
                 <div class="mt-1 flex flex-wrap items-center gap-2">
@@ -1220,7 +1220,7 @@
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
               </button>
             </div>
-            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+            <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3 sm:px-5 sm:py-5">
               <p class="text-sm leading-6 text-slate-600">Add the record below at the DNS provider where you manage this domain (your registrar or hosting provider). DNS changes can take from a few minutes up to 48 hours to propagate, so verification may not succeed right away.</p>
               <p id="dm-dns-loading" class="hidden text-sm text-slate-500">Loading DNS instructions…</p>
               <p id="dm-dns-empty" class="hidden rounded-lg bg-slate-50 px-3 py-3 text-sm text-slate-600">DNS instructions aren't available for this domain right now. Close this and try again in a moment.</p>
@@ -1230,7 +1230,7 @@
               <p id="dm-dns-result" class="hidden rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700" role="status" aria-live="polite"></p>
               <p class="text-xs leading-5 text-slate-400">Verification confirms that you control the domain's DNS. Short links may not work on the domain until routing and HTTPS are also set up for it.</p>
             </div>
-            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-3 sm:px-5 sm:py-3.5 sm:flex-row sm:justify-end">
               <button type="button" data-dm-close-dns class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Close</button>
               <button id="dm-dns-verify" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
                 <svg id="dm-dns-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
@@ -1503,15 +1503,15 @@
 
         <div id="tg-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
         <!-- Create / edit dialog -->
-        <dialog id="tg-form-dialog" aria-labelledby="tg-form-title" class="fixed inset-0 m-auto max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
-          <form id="tg-form" novalidate class="flex max-h-[calc(100dvh-1rem)] flex-col">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <dialog id="tg-form-dialog" aria-labelledby="tg-form-title"class="mx-auto mt-3 mb-auto sm:my-auto w-[calc(100%-1.5rem)] max-w-md max-h-[80dvh] overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">  
+          <form id="tg-form" novalidate class="flex max-h-[80dvh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4">
               <h3 id="tg-form-title" class="text-base font-semibold text-slate-900">Create tag</h3>
               <button type="button" data-tg-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
               </button>
             </div>
-            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+            <div class="flex-1 space-y-3 overflow-y-auto px-4 py-3 sm:space-y-4 sm:px-5 sm:py-5">
               <div>
                 <label for="tg-name" class="mb-1.5 block text-sm font-medium text-slate-700">Tag name</label>
                 <input id="tg-name" type="text" maxlength="30" autocomplete="off" placeholder="e.g. Promo" aria-describedby="tg-name-error"
@@ -1525,8 +1525,8 @@
               </fieldset>
               <p id="tg-form-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
             </div>
-            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
-              <button type="button" data-tg-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-3 sm:px-5 sm:py-3.5 sm:flex-row sm:justify-end">
+              <button type="button" data-tg-close class="h-10 w-full rounded-lg border border-slate-200 px-3 text-base sm:text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">Cancel</button>
               <button id="tg-submit" type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
                 <svg id="tg-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
                 <span id="tg-submit-label">Create tag</span>
