@@ -1,5 +1,7 @@
 import {shortUrl} from './main-shorturl.js';
 import { initCampaignsTab } from './campaigns.js';
+import { initTagsTab } from './tags.js';
+import { initDomainsTab } from "./domain.js";
 import {handleDashboardShortenSubmit} from './dashboard-shorturl.js'
 import { tryRenderGoogleButton, handleGoogleSignIn } from './googleBtn.js';
 import { registeredEmail, handleSignIn, showFieldError, resetFieldError } from './signup.js';
@@ -626,6 +628,273 @@ export function setupDashboardRoute({ handleDashboardShortenSubmit, fetchUserPro
       }
 
       return data;
+    }
+  });
+
+  if (typeof window.initTagsTab === 'function') {
+    window.initTagsTab({
+      api: {
+        listTags: async () => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch('/api/tags', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to load tags.');
+          }
+
+          return {
+            tags: data.tags.map(tag => ({
+              ...tag,
+              id: tag._id
+            })),
+            taggedLinks: data.taggedLinks
+          };
+        },
+
+        createTag: async ({ name, color }) => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, color })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to create tag.');
+          }
+
+          return {
+            ...data.tag,
+            id: data.tag._id
+          };
+        },
+        deleteTag: async (id) => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch(
+            `/api/tags/${encodeURIComponent(id)}`,
+            {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to delete tag.');
+          }
+
+          return data;
+        },
+        listLinks: async () => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch('/api/tags/links', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to load links.');
+          }
+
+          return data.links.map(link => ({
+            id: String(link._id),
+            label: link.shortUrl || link.longUrl,
+            originalUrl: link.longUrl
+          }));
+        },
+        getTagLinks: async (tagId) => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch(`/api/tags/${encodeURIComponent(tagId)}/links`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to load tagged links.');
+          }
+
+          return data.links.map(link => link._id);
+        },
+        setTagLinks: async (tagId, linkIds) => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch(`/api/tags/${encodeURIComponent(tagId)}/links`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ linkIds })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to save tag assignments.');
+          }
+
+          return data;
+        },
+        updateTag: async (id, { name, color }) => {
+          const token = localStorage.getItem('authToken');
+
+          const response = await fetch(
+            `/api/tags/${encodeURIComponent(id)}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ name, color })
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to update tag.');
+          }
+
+          return {
+            ...data.tag,
+            id: data.tag._id
+          };
+        }
+      }
+    });
+  } else {
+    console.error('Tags: initTagsTab is not available.');
+  }
+
+  initDomainsTab({
+    api: {
+      listDomains: async () => {
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch('/api/domains', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to load domains.');
+        }
+
+        return data;
+      },
+
+      addDomain: async ({ domain }) => {
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch('/api/domains', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ domain })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to add domain.');
+        }
+
+        return data;
+      },
+
+      getDomain: async (id) => {
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch(
+          `/api/domains/${encodeURIComponent(id)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to load domain.');
+        }
+
+        return data;
+      },
+
+      verifyDomain: async (id) => {
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch(
+          `/api/domains/${encodeURIComponent(id)}/verify`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to verify domain.');
+        }
+
+        return data;
+      },
+
+      deleteDomain: async (id) => {
+        const token = localStorage.getItem('authToken');
+
+        const response = await fetch(
+          `/api/domains/${encodeURIComponent(id)}`,
+          {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to delete domain.');
+        }
+
+        return data;
+      }
     }
   });
 

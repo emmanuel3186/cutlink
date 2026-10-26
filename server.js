@@ -1,5 +1,7 @@
 import URLModel from './models/URL.js';
 import Click from './models/clicks.js';
+import CustomDomain from "./models/customDomain.js";
+import Tag from './models/tags.js';
 import User from './models/user.js';
 import QRCode from './models/qrCode.js';
 import path from 'path';
@@ -8,6 +10,8 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import PDFDocumentWithTables from 'pdfkit-table';
+import { randomBytes } from "node:crypto";
+import { resolveTxt } from "node:dns/promises";
 import express from 'express';
 import nodemailer from 'nodemailer';
 import {customAlphabet} from 'nanoid';
@@ -147,6 +151,222 @@ const requireAuth = (req, res, next) => {
     return res.status(403).json({success: false, message: 'Session expired or invalid token.' });
   }
 };
+
+// Return a consistent domain shape to the frontend.
+function formatDomain(domain) {
+  return {
+    id: domain._id.toString(),
+    domain: domain.domain,
+    status: domain.status,
+    createdAt: domain.createdAt,
+    verifiedAt: domain.verifiedAt,
+    ready: domain.ready,
+  };
+}
+// DNS ownership verification record.
+function getDnsRecords(domain) {
+  return {
+    records: [
+      {
+        type: "TXT",
+        name: `_cutlink-verification.${domain.domain}`,
+        value: domain.verificationToken,
+        ttl: 3600,
+        purpose: "Prove ownership of this domain",
+      },
+    ],
+  };
+}
+// GET /api/domains
+// List only the authenticated user's domains.
+app.get("/api/domains", requireAuth, async (req, res) => {
+  try {
+    const domains = await CustomDomain.find({
+      userId: req.user.userId,
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      domains: domains.map(formatDomain),
+    });
+  } catch (error) {
+    console.error("List domains error:", error);
+    res.status(500).json({ message: "Could not load domains." });
+  }
+});
+// POST /api/domains
+// Add a domain and generate its verification token.
+app.post("/api/domains", requireAuth, async (req, res) => {
+  try {
+    let { domain } = req.body;
+
+    if (typeof domain !== "string") {
+      return res.status(400).json({
+        message: "Enter a valid domain name.",
+      });
+    }
+
+    domain = domain.trim().toLowerCase();
+
+    // Basic server-side validation.
+    const validDomain =
+      /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+    if (!validDomain.test(domain)) {
+      return res.status(400).json({
+        message: "Enter a valid domain name.",
+      });
+    }
+
+    const verificationToken = randomBytes(24).toString("hex");
+
+    const created = await CustomDomain.create({
+      userId: req.user.userId,
+      domain,
+      verificationToken,
+    });
+
+    res.status(201).json({
+      domain: formatDomain(created),
+      dns: getDnsRecords(created),
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "You have already added this domain.",
+      });
+    }
+
+    console.error("Add domain error:", error);
+    res.status(500).json({ message: "Could not add domain." });
+  }
+});
+// GET /api/domains/:id
+// Retrieve one of the user's domains and its DNS instructions.
+app.get("/api/domains/:id", requireAuth, async (req, res) => {
+  try {
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid domain ID.",
+      });
+    }
+
+    const domain = await CustomDomain.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
+
+    if (!domain) {
+      return res.status(404).json({
+        message: "Domain not found.",
+      });
+    }
+
+    res.json({
+      domain: formatDomain(domain),
+      dns: getDnsRecords(domain),
+    });
+  } catch (error) {
+    console.error("Get domain error:", error);
+    res.status(500).json({ message: "Could not load domain." });
+  }
+});
+
+// POST /api/domains/:id/verify
+// Verify ownership by checking the TXT record in public DNS.
+app.post("/api/domains/:id/verify", requireAuth, async (req, res) => {
+  try {
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid domain ID.",
+      });
+    }
+
+    const domain = await CustomDomain.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
+
+    if (!domain) {
+      return res.status(404).json({
+        message: "Domain not found.",
+      });
+    }
+
+    const recordName =
+      `_cutlink-verification.${domain.domain}`;
+
+    try {
+      const records = await resolveTxt(recordName);
+      const values = records.flat();
+
+      const verified = values.includes(domain.verificationToken);
+
+      if (verified) {
+        domain.status = "verified";
+        domain.verifiedAt = new Date();
+
+        // Ownership verified does NOT mean routing and HTTPS work.
+        domain.ready = false;
+
+        await domain.save();
+
+        return res.json({
+          domain: formatDomain(domain),
+          verified: true,
+          message:
+            "Domain ownership verified. Routing and HTTPS still need to be configured.",
+        });
+      }
+    } catch (dnsError) {
+      // DNS record may not exist yet or DNS may be temporarily unavailable.
+      console.warn(
+        "DNS verification lookup:",
+        dnsError.code || dnsError.message
+      );
+    }
+
+    return res.json({
+      domain: formatDomain(domain),
+      verified: false,
+      message:
+        "Verification record not found yet. Check the TXT record and try again after DNS updates propagate.",
+    });
+  } catch (error) {
+    console.error("Verify domain error:", error);
+    res.status(500).json({
+      message: "Could not verify domain.",
+    });
+  }
+});
+// DELETE /api/domains/:id
+// Delete only the authenticated user's domain.
+app.delete("/api/domains/:id", requireAuth, async (req, res) => {
+  try {
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid domain ID.",
+      });
+    }
+
+    const deleted = await CustomDomain.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Domain not found.",
+      });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Delete domain error:", error);
+    res.status(500).json({
+      message: "Could not delete domain.",
+    });
+  }
+});
 
 app.get('/api/user/links', requireAuth, async (req, res) => {
   try {
@@ -719,20 +939,26 @@ app.get('/api/user/profile', async (req, res) => {
 const generateShortCode = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
 
 app.post('/api/shorten', async (req, res) => {
-  let { longUrl, campaign } = req.body;
+  let { longUrl, campaign, customDomainId } = req.body;
 
   campaign = typeof campaign === 'string' ? campaign.trim() : null;
+
   if (!campaign) campaign = null;
 
   if (!longUrl) {
     return res.status(400).json({ success: false, message: 'Please enter a link to shorten.' });
   }
+
   longUrl = longUrl.trim();
+
   if (!/^https?:\/\//i.test(longUrl)) {
     longUrl = `https://${longUrl}`;
   }
+
   let currentUserId = null;
+
   const authHeader = req.headers['authorization'];
+
   if (authHeader) {
     try {
       const token = authHeader.split(' ')[1];
@@ -743,28 +969,69 @@ app.post('/api/shorten', async (req, res) => {
     }
   }
   try {
+    let domainRecord = null;
+    if (customDomainId) {
+      if (!currentUserId) {
+        return res.status(401).json({
+          success: false,
+          message: "Log in to use a custom domain."
+        });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(customDomainId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid custom domain."
+        });
+      }
+
+      domainRecord = await CustomDomain.findOne({
+        _id: customDomainId,
+        userId: currentUserId,
+        status: "verified",
+        ready: true
+      });
+
+      if (!domainRecord) {
+        return res.status(403).json({
+          success: false,
+          message: "This domain is not verified, ready, or owned by your account."
+        });
+      }
+    }
+
     let urlRecord = await URLModel.findOne({
       longUrl: longUrl,
       userId: currentUserId,
-      campaign: campaign
+      campaign: campaign,
+      customDomainId: customDomainId || null
     });
+
     if (urlRecord) {
-      const shortLink = `${BASE_URL}/${urlRecord.shortUrl}`;
+      const shortLink = customDomainId ? `https://${(await CustomDomain.findById(customDomainId)).domain}/${urlRecord.shortUrl}`
+      : `${BASE_URL}/${urlRecord.shortUrl}`;
+
       return res.status(200).json({ 
         success: true, 
         message: 'Link retrieved from your history logs!', 
         shortUrl: shortLink 
       });
     }
+
     const shortCode = generateShortCode();
+
     urlRecord = new URLModel({
       longUrl: longUrl,
       shortUrl: shortCode,
       userId: currentUserId,
-      campaign: campaign
+      campaign: campaign,
+      customDomainId: customDomainId || null
     });
+
     await urlRecord.save();
-    const shortLink = `${BASE_URL}/${urlRecord.shortUrl}`;
+
+    const shortLink = domainRecord ? `https://${domainRecord.domain}/${urlRecord.shortUrl}` : `${BASE_URL}/${urlRecord.shortUrl}`;
+
     return res.status(201).json({ 
       success: true, 
       message: "Link shortened successfully!", 
@@ -1307,7 +1574,33 @@ app.get('/:code', async (req, res) => {
   const { code } = req.params; 
   if (code === 'favicon.ico' || code === 'output.css') return;
   try {
-    const urlRecord = await URLModel.findOne({ shortUrl: code });
+    const hostname = req.hostname.toLowerCase();
+    const baseHostname = new URL(BASE_URL).hostname.toLowerCase();
+    let urlRecord;
+    if ( hostname === baseHostname || hostname === "localhost" || hostname === "127.0.0.1") {
+      // Existing links on CutLink's default domain
+      urlRecord = await URLModel.findOne({
+        shortUrl: code,
+        $or: [
+          { customDomainId: null },
+          { customDomainId: { $exists: false } }
+        ]
+      });
+    } else {
+      // Links belonging to a verified, ready custom domain
+      const domainRecord = await CustomDomain.findOne({
+        domain: hostname,
+        status: "verified",
+        ready: true
+      });
+      if (domainRecord) {
+        urlRecord = await URLModel.findOne({
+          shortUrl: code,
+          customDomainId: domainRecord._id
+        });
+      }
+    }
+
     if (!urlRecord) {
       return res.status(404).send(`
         <div style="font-family: sans-serif; text-align: center; margin-top: 100px;">
@@ -1316,6 +1609,7 @@ app.get('/:code', async (req, res) => {
         </div>
       `);
     }
+
     if (urlRecord.expiresAt && new Date() > urlRecord.expiresAt) {
       return res.status(410).send(`
         <div style="font-family: sans-serif; text-align: center; margin-top: 100px;">
@@ -1711,6 +2005,389 @@ app.delete("/api/qr-codes/:id", requireAuth, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete QR code."
+    });
+  }
+});
+
+
+app.get('/api/tags', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const tags = await Tag.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const tagsWithCounts = await Promise.all(
+      tags.map(async (tag) => {
+        const linkCount = await URLModel.countDocuments({
+          userId,
+          tags: tag._id
+        });
+
+        return {
+          ...tag,
+          id: String(tag._id),
+          linkCount
+        };
+      })
+    );
+
+    const taggedLinks = await URLModel.countDocuments({
+      userId: req.user.userId,
+      tags: { $exists: true, $ne: [] }
+    });
+
+    res.json({
+      success: true,
+      tags: tagsWithCounts,
+      taggedLinks
+    });
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch tags.'
+    });
+  }
+});
+
+
+app.post('/api/tags', requireAuth, async (req, res) => {
+  try {
+    const { name, color } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag name is required.'
+      });
+    }
+
+    const cleanName = name.trim();
+
+    if (cleanName.length > 30) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag name cannot exceed 30 characters.'
+      });
+    }
+
+    const existingTag = await Tag.findOne({
+      userId: req.user.userId,
+      name: { $regex: `^${cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    });
+
+    if (existingTag) {
+      return res.status(409).json({
+        success: false,
+        message: 'You already have a tag with this name.'
+      });
+    }
+
+    const tag = await Tag.create({
+      userId: req.user.userId,
+      name: cleanName,
+      color: color || 'indigo'
+    });
+
+    res.status(201).json({
+      success: true,
+      tag
+    });
+  } catch (error) {
+    console.error('Error creating tag:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create tag.'
+    });
+  }
+});
+
+
+app.delete('/api/tags/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    // Validate the MongoDB ID before querying.
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid tag ID.'
+      });
+    }
+    // Find a tag owned by the logged-in user.
+    const tag = await Tag.findOne({
+      _id: id,
+      userId
+    });
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found.'
+      });
+    }
+    // Remove this tag's ID from the user's URLs.
+    await URLModel.updateMany(
+      {
+        userId,
+        tags: tag._id
+      },
+      {
+        $pull: { tags: tag._id }
+      }
+    );
+    // Delete the tag itself, not the URLs.
+    await Tag.deleteOne({
+      _id: tag._id,
+      userId
+    });
+
+    return res.json({
+      success: true,
+      message: 'Tag deleted successfully.'
+    });
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete tag.'
+    });
+  }
+});
+
+
+app.get('/api/tags/links', requireAuth, async (req, res) => {
+  try {
+    const links = await URLModel.find({
+      userId: req.user.userId
+    })
+      .select('_id longUrl shortUrl createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      links
+    });
+  } catch (error) {
+    console.error('Error fetching links for tags:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch links.'
+    });
+  }
+});
+
+
+app.get('/api/tags/:id/links', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid tag ID.'
+      });
+    }
+
+    const tag = await Tag.findOne({
+      _id: id,
+      userId: req.user.userId
+    });
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found.'
+      });
+    }
+
+    const links = await URLModel.find({
+      userId: req.user.userId,
+      tags: tag._id
+    }).select('_id longUrl shortUrl');
+
+    res.json({
+      success: true,
+      links
+    });
+  } catch (error) {
+    console.error('Error fetching tagged links:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch tagged links.'
+    });
+  }
+});
+
+
+app.put('/api/tags/:id/links', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { linkIds } = req.body;
+    const userId = req.user.userId;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid tag ID.'
+      });
+    }
+
+    if (!Array.isArray(linkIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'linkIds must be an array.'
+      });
+    }
+
+    const tag = await Tag.findOne({ _id: id, userId });
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found.'
+      });
+    }
+
+    const validIds = linkIds.filter(mongoose.isValidObjectId);
+
+    if (validIds.length !== linkIds.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'One or more link IDs are invalid.'
+      });
+    }
+
+    const links = await URLModel.find({
+      _id: { $in: validIds },
+      userId
+    }).select('_id');
+
+    if (links.length !== new Set(validIds.map(String)).size) {
+      return res.status(400).json({
+        success: false,
+        message: 'Some links do not belong to your account.'
+      });
+    }
+
+    // Remove this tag from links that were unchecked.
+    await URLModel.updateMany(
+      { userId, tags: tag._id, _id: { $nin: validIds } },
+      { $pull: { tags: tag._id } }
+    );
+
+    // Add this tag to links that were checked.
+    await URLModel.updateMany(
+      { userId, _id: { $in: validIds } },
+      { $addToSet: { tags: tag._id } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Tag assignments saved.'
+    });
+  } catch (error) {
+    console.error('Error assigning tags:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save tag assignments.'
+    });
+  }
+});
+
+
+app.put('/api/tags/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, color } = req.body;
+    const userId = req.user.userId;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid tag ID.'
+      });
+    }
+
+    if (typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag name is required.'
+      });
+    }
+
+    const cleanName = name.trim();
+
+    if (cleanName.length > 30) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag name cannot exceed 30 characters.'
+      });
+    }
+
+    const allowedColors = [
+      'indigo', 'sky', 'emerald', 'amber',
+      'orange', 'rose', 'violet', 'slate'
+    ];
+
+    if (color !== undefined && !allowedColors.includes(color)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid tag color.'
+      });
+    }
+
+    const tag = await Tag.findOne({
+      _id: id,
+      userId
+    });
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found.'
+      });
+    }
+
+    const duplicate = await Tag.findOne({
+      userId,
+      _id: { $ne: tag._id },
+      name: { $regex: `^${cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+    });
+
+    if (duplicate) {
+      return res.status(409).json({
+        success: false,
+        message: 'You already have a tag with this name.'
+      });
+    }
+
+    tag.name = cleanName;
+
+    if (color !== undefined) {
+      tag.color = color;
+    }
+
+    await tag.save();
+
+    return res.json({
+      success: true,
+      tag
+    });
+  } catch (error) {
+    console.error('Error updating tag:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update tag.'
     });
   }
 });

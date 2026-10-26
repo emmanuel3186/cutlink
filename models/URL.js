@@ -7,6 +7,12 @@ const urlSchema = new mongoose.Schema({
     default: null,
     index: true 
   },
+  customDomainId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CustomDomain",
+    default: null,
+    index: true
+  },
   longUrl: {
     type: String,
     required: true
@@ -21,6 +27,10 @@ const urlSchema = new mongoose.Schema({
     trim: true,
     default: null
   },
+  tags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tag"
+  }],
   createdAt: {
     type: Date,
     default: Date.now

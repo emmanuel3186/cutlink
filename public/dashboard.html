@@ -1076,8 +1076,187 @@
           </div>
         </div>
       </section>
-      <section id="custom-domains" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <p>domain</p>
+
+      <section id="custom-domains" class="hidden space-y-5" aria-labelledby="dm-title">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 id="dm-title" class="text-xl font-semibold tracking-tight text-slate-900">Custom Domains</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Create branded short links using domains and subdomains you own.</p>
+          </div>
+          <button id="dm-add" type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Add domain
+          </button>
+        </div>
+
+        <!-- Shown by JS when the API hasn't been connected -->
+        <div id="dm-notice" class="hidden items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+          <svg class="mt-0.5 h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <span id="dm-notice-text"></span>
+        </div>
+
+        <div id="dm-status" class="sr-only" role="status" aria-live="polite"></div>
+
+        <!-- Overview (values filled by JS from the API data) -->
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Total domains</p>
+            <p id="dm-stat-total" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+            <p id="dm-stat-total-sub" class="mt-0.5 text-xs text-slate-500"></p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Verified</p>
+            <p id="dm-stat-verified" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Pending verification</p>
+            <p id="dm-stat-pending" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
+          </div>
+        </div>
+
+        <!-- List surface -->
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+
+          <!-- Loading (static placeholders, not data) -->
+          <div id="dm-loading" class="hidden divide-y divide-slate-100" role="status" aria-live="polite">
+            <span class="sr-only">Loading domains…</span>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-40 rounded bg-slate-200"></div><div class="h-5 w-28 rounded-full bg-slate-100"></div><div class="ml-auto hidden h-3.5 w-24 rounded bg-slate-100 sm:block"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-32 rounded bg-slate-200"></div><div class="h-5 w-24 rounded-full bg-slate-100"></div><div class="ml-auto hidden h-3.5 w-24 rounded bg-slate-100 sm:block"></div></div>
+            <div class="flex animate-pulse items-center gap-4 px-5 py-4" aria-hidden="true"><div class="h-3.5 w-36 rounded bg-slate-200"></div><div class="h-5 w-28 rounded-full bg-slate-100"></div><div class="ml-auto hidden h-3.5 w-24 rounded bg-slate-100 sm:block"></div></div>
+          </div>
+
+          <!-- Error -->
+          <div id="dm-error" class="hidden px-6 py-16 text-center" role="alert">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+            </div>
+            <h3 class="mt-3 text-sm font-semibold text-slate-900">We couldn't load your domains</h3>
+            <p id="dm-error-msg" class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Check your connection and try again.</p>
+            <button id="dm-retry" type="button" class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Try again</button>
+          </div>
+
+          <!-- Empty -->
+          <div id="dm-empty" class="hidden px-6 py-16 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+              <svg class="h-6 w-6" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M2.75 10h14.5M10 2.75c2 2.2 3 4.6 3 7.25s-1 5.05-3 7.25c-2-2.2-3-4.6-3-7.25s1-5.05 3-7.25z"/></svg>
+            </div>
+            <h3 class="mt-4 text-base font-semibold text-slate-900">No custom domains yet</h3>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Add a domain or subdomain you own, like go.yourbrand.com, then point its DNS to CutLink to use it for your short links.</p>
+            <button id="dm-empty-add" type="button" class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+              Add your first domain
+            </button>
+          </div>
+
+          <!-- List: table from md up, cards on mobile (same data, one delegated click listener) -->
+          <div id="dm-list-wrap" class="hidden">
+            <div class="hidden overflow-x-auto md:block">
+              <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
+                  <tr>
+                    <th scope="col" class="px-5 py-2.5">Domain</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5">Status</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-2.5">Date added</th>
+                    <th scope="col" class="whitespace-nowrap px-5 py-2.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dm-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+            <ul id="dm-cards" class="divide-y divide-slate-100 md:hidden"></ul>
+          </div>
+        </div>
+
+        <div id="dm-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+
+        <!-- Add domain dialog -->
+        <dialog id="dm-add-dialog" aria-labelledby="dm-add-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <form id="dm-add-form" novalidate class="flex max-h-[90vh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 id="dm-add-title" class="text-base font-semibold text-slate-900">Add domain</h3>
+              <button type="button" data-dm-close-add class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+              <div>
+                <label for="dm-domain" class="mb-1.5 block text-sm font-medium text-slate-700">Domain or subdomain</label>
+                <input id="dm-domain" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="go.example.com"
+                  aria-describedby="dm-domain-hint dm-domain-error"
+                  class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                <p id="dm-domain-hint" class="mt-1.5 text-xs text-slate-400">Enter only the domain name, without https:// or a path.</p>
+                <p id="dm-domain-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+              </div>
+              <p class="rounded-lg bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-600">You must own or control this domain and be able to edit its DNS records. After you add it, we'll show the DNS record to create. The domain stays unverified until CutLink's servers find that record.</p>
+              <p id="dm-add-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+            </div>
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+              <button type="button" data-dm-close-add class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+              <button id="dm-add-submit" type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
+                <svg id="dm-add-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                <span id="dm-add-submit-label">Add domain</span>
+              </button>
+            </div>
+          </form>
+        </dialog>
+
+        <!-- DNS instructions dialog (also opens right after a domain is registered) -->
+        <dialog id="dm-dns-dialog" aria-labelledby="dm-dns-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-2xl rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[90vh] flex-col">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+              <div class="min-w-0">
+                <h3 id="dm-dns-title" class="text-base font-semibold text-slate-900">DNS setup</h3>
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                  <span id="dm-dns-domain" class="break-all text-sm font-medium text-slate-700"></span>
+                  <span id="dm-dns-status"></span>
+                </div>
+              </div>
+              <button type="button" data-dm-close-dns class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+              <p class="text-sm leading-6 text-slate-600">Add the record below at the DNS provider where you manage this domain (your registrar or hosting provider). DNS changes can take from a few minutes up to 48 hours to propagate, so verification may not succeed right away.</p>
+              <p id="dm-dns-loading" class="hidden text-sm text-slate-500">Loading DNS instructions…</p>
+              <p id="dm-dns-empty" class="hidden rounded-lg bg-slate-50 px-3 py-3 text-sm text-slate-600">DNS instructions aren't available for this domain right now. Close this and try again in a moment.</p>
+              <p id="dm-dns-fail" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+              <div id="dm-dns-records" class="space-y-3"></div>
+              <p id="dm-dns-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"></p>
+              <p id="dm-dns-result" class="hidden rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700" role="status" aria-live="polite"></p>
+              <p class="text-xs leading-5 text-slate-400">Verification confirms that you control the domain's DNS. Short links may not work on the domain until routing and HTTPS are also set up for it.</p>
+            </div>
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+              <button type="button" data-dm-close-dns class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Close</button>
+              <button id="dm-dns-verify" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
+                <svg id="dm-dns-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                <span id="dm-dns-verify-label">Check verification</span>
+              </button>
+            </div>
+          </div>
+        </dialog>
+
+        <!-- Remove confirmation -->
+        <dialog id="dm-delete-dialog" aria-labelledby="dm-delete-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m2 0v9.5a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 016 15.5V6"/></svg>
+            </div>
+            <h3 id="dm-delete-title" class="mt-3 text-base font-semibold text-slate-900">Remove this domain?</h3>
+            <p id="dm-delete-name" class="mt-1 break-all text-sm font-medium text-slate-700"></p>
+            <p id="dm-delete-detail" class="mt-1 text-sm text-slate-500"></p>
+            <p id="dm-delete-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          </div>
+          <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <button id="dm-delete-cancel" type="button" class="h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Cancel</button>
+            <button id="dm-delete-confirm" type="button" class="h-9 rounded-lg bg-red-600 px-3.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">Remove domain</button>
+          </div>
+        </dialog>
       </section>
 
       <section id="campaigns" class="hidden space-y-5" aria-labelledby="cm-title">
@@ -1266,10 +1445,148 @@
         </dialog>
       </section>
 
+      <section id="tags-label" class="hidden space-y-5" aria-labelledby="tg-title">
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 id="tg-title" class="text-xl font-semibold tracking-tight text-slate-900">Tags &amp; Labels</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Organize your links with colored tags so you can find and group them quickly.</p>
+          </div>
+          <button id="tg-create" type="button"
+            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Create tag
+          </button>
+        </div>
+        <!-- Shown by JS when tags aren't connected to a backend, or only stored for this session -->
+        <div id="tg-notice" class="hidden items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+          <svg class="mt-0.5 h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <span id="tg-notice-text"></span>
+        </div>
+        <div id="tg-status" class="sr-only" role="status" aria-live="polite"></div>
+        <!-- Compact summary (values come from the data; hidden until loaded) -->
+        <div id="tg-summary" class="hidden flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500" role="group" aria-label="Tag summary">
+          <span><strong id="tg-stat-tags" class="font-semibold tabular-nums text-slate-900">–</strong> <span id="tg-stat-tags-label">tags</span></span>
+          <span class="text-slate-300" aria-hidden="true">/</span>
+          <span><strong id="tg-stat-linked" class="font-semibold tabular-nums text-slate-900">–</strong> tagged links</span>
+        </div>
+        <!-- Loading (static placeholders, not data) -->
+        <div id="tg-loading" class="hidden gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-live="polite">
+          <span class="sr-only">Loading tags…</span>
+          <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white" aria-hidden="true"></div>
+          <div class="h-24 animate-pulse rounded-xl border border-slate-200 bg-white" aria-hidden="true"></div>
+          <div class="hidden h-24 animate-pulse rounded-xl border border-slate-200 bg-white lg:block" aria-hidden="true"></div>
+        </div>
+        <!-- Error -->
+        <div id="tg-error" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm" role="alert">
+          <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.5h.01"/></svg>
+          </div>
+          <h3 class="mt-3 text-sm font-semibold text-slate-900">We couldn't load your tags</h3>
+          <p class="mx-auto mt-1 max-w-xs text-sm text-slate-500">Check your connection and try again.</p>
+          <button id="tg-retry" type="button" class="mt-5 h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Try again</button>
+        </div>
+        <!-- Empty -->
+        <div id="tg-empty" class="hidden rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.2V4.5A1.5 1.5 0 014.5 3h5.7a1.5 1.5 0 011.06.44l6.3 6.3a1.5 1.5 0 010 2.12l-5.7 5.7a1.5 1.5 0 01-2.12 0l-6.3-6.3A1.5 1.5 0 013 10.2z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>
+          </div>
+          <h3 class="mt-4 text-base font-semibold text-slate-900">No tags yet</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Create tags like "Promo" or "Social", then assign them to your links to keep everything organized.</p>
+          <button id="tg-empty-create" type="button" class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
+            Create your first tag
+          </button>
+        </div>
+        <!-- Tag cards (rendered by tags.js) -->
+        <div id="tg-grid" class="hidden gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
 
-      <section id="tags-label" class="hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <p>tags</p>
+        <div id="tg-toast" class="pointer-events-none fixed inset-x-4 bottom-4 z-60 mx-auto hidden max-w-sm rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+        <!-- Create / edit dialog -->
+        <dialog id="tg-form-dialog" aria-labelledby="tg-form-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <form id="tg-form" novalidate class="flex max-h-[90vh] flex-col">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 id="tg-form-title" class="text-base font-semibold text-slate-900">Create tag</h3>
+              <button type="button" data-tg-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+            <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+              <div>
+                <label for="tg-name" class="mb-1.5 block text-sm font-medium text-slate-700">Tag name</label>
+                <input id="tg-name" type="text" maxlength="30" autocomplete="off" placeholder="e.g. Promo" aria-describedby="tg-name-error"
+                  class="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+                <p id="tg-name-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+              </div>
+              <fieldset>
+                <legend class="mb-1.5 block text-sm font-medium text-slate-700">Color</legend>
+                <div id="tg-colors" class="flex flex-wrap gap-2.5"></div>
+                <p id="tg-color-error" class="mt-1.5 hidden text-xs text-red-600" role="alert"></p>
+              </fieldset>
+              <p id="tg-form-error" class="hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+            </div>
+            <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+              <button type="button" data-tg-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+              <button id="tg-submit" type="submit" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">
+                <svg id="tg-spinner" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                <span id="tg-submit-label">Create tag</span>
+              </button>
+            </div>
+          </form>
+        </dialog>
+
+        <!-- Delete confirmation -->
+        <dialog id="tg-delete-dialog" aria-labelledby="tg-delete-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="p-5">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m2 0v9.5a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 016 15.5V6"/></svg>
+            </div>
+            <h3 id="tg-delete-title" class="mt-3 text-base font-semibold text-slate-900">Delete this tag?</h3>
+            <p id="tg-delete-name" class="mt-1 wrap-break-word text-sm font-medium text-slate-700"></p>
+            <p id="tg-delete-detail" class="mt-1 text-sm text-slate-500"></p>
+            <p id="tg-delete-error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert"></p>
+          </div>
+          <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3.5 sm:flex-row sm:justify-end">
+            <button id="tg-delete-cancel" type="button" class="h-9 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50">Cancel</button>
+            <button id="tg-delete-confirm" type="button" class="h-9 rounded-lg bg-red-600 px-3.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-red-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">Delete tag</button>
+          </div>
+        </dialog>
+
+        <!-- Assign links dialog (only reachable when the link-assignment hooks are provided) -->
+        <dialog id="tg-assign-dialog" aria-labelledby="tg-assign-title"
+          class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[90vh] flex-col">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+              <div class="min-w-0">
+                <h3 id="tg-assign-title" class="text-base font-semibold text-slate-900">Assign links</h3>
+                <p id="tg-assign-sub" class="mt-0.5 truncate text-sm text-slate-500"></p>
+              </div>
+              <button type="button" data-tg-assign-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg>
+              </button>
+            </div>
+            <div class="border-b border-slate-100 px-5 py-3">
+              <label for="tg-assign-search" class="sr-only">Search links</label>
+              <input id="tg-assign-search" type="search" autocomplete="off" placeholder="Search your links"
+                class="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm placeholder:text-slate-400 transition-colors duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-hidden focus:ring-2 focus:ring-indigo-600/20">
+            </div>
+            <div class="min-h-40 flex-1 overflow-y-auto">
+              <p id="tg-assign-msg" class="hidden px-5 py-10 text-center text-sm text-slate-500"></p>
+              <ul id="tg-assign-list" class="divide-y divide-slate-100"></ul>
+            </div>
+            <div class="flex flex-col gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+              <p id="tg-assign-count" class="text-xs text-slate-500" aria-live="polite"></p>
+              <div class="flex flex-col-reverse gap-2 sm:flex-row">
+                <button type="button" data-tg-assign-close class="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50 sm:h-9">Cancel</button>
+                <button id="tg-assign-save" type="button" class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:h-9">Save</button>
+              </div>
+            </div>
+          </div>
+        </dialog>
       </section>
+
       <section id="view-settings" class="hidden bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
         <h2 class="text-base font-semibold text-slate-900 mb-2">Account Configurations</h2>
         <p class="text-xs text-slate-400">Manage account passwords, verification recovery details, and premium workspace tiers.</p>
@@ -1300,6 +1617,8 @@
   <script src="/analytics.js" type="module" defer></script>
   <script src="/audiences.js" type="module" defer></script>
   <script src="/campaigns.js" type="module" defer></script>
+  <script src="/tags.js" type="module" defer></script>
+  <script src="/domain.js" type="module" defer></script>
   <script src="/googleBtn.js" type="module" defer></script>
   <script src="/codeVerify.js" type="module" defer></script>
   <script src="/dashboard-shorturl.js" type="module" defer></script>
