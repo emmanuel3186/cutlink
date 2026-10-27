@@ -434,10 +434,17 @@ export function initCampaignsTab(options = {}) {
   }
 
   function openCreate() {
-    el.form.reset(); showErrors({}); el.formError.classList.add('hidden');
-    setSubmitting(false); setView('form');
+    el.form.reset();
+    showErrors({});
+    el.formError.classList.add('hidden');
+    setSubmitting(false);
+    setView('form');
+
     if (!el.dialog.open) el.dialog.showModal();
-    el.fields.name.focus();
+
+    if (window.matchMedia('(min-width: 640px)').matches) {
+      el.fields.name.focus();
+    }
   }
   const closeDialog = () => { if (el.dialog.open) el.dialog.close(); };
 
@@ -481,6 +488,16 @@ export function initCampaignsTab(options = {}) {
   /* ----- Events (all scoped to this section; nothing global) ----- */
   el.create.addEventListener('click', openCreate);
   el.emptyCreate.addEventListener('click', openCreate);
+  document.querySelectorAll('#cm-form input, #cm-form select').forEach((input) => {
+    input.addEventListener('focus', () => {
+      setTimeout(() => {
+        input.scrollIntoView({
+          block: 'center',
+          behavior: 'smooth'
+        });
+      }, 300);
+    });
+  });
   el.retry.addEventListener('click', load);
   el.form.addEventListener('submit', onSubmit);
   Object.entries(el.fields).forEach(([k, input]) => input.addEventListener('input', () => { // clear a field's error as soon as the user edits it

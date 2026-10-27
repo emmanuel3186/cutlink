@@ -1262,7 +1262,7 @@
       <section id="campaigns" class="hidden space-y-5" aria-labelledby="cm-title">
 
         <!-- Header -->
-        <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4">
           <div class="min-w-0">
             <h2 id="cm-title" class="text-xl font-semibold tracking-tight text-slate-900">Campaigns</h2>
             <p class="mt-0.5 text-sm text-slate-500">Create, organize, and track your marketing campaigns.</p>
@@ -1283,7 +1283,7 @@
         <div id="cm-status" class="sr-only" role="status" aria-live="polite"></div>
 
         <!-- Summary cards (values filled by JS) -->
-        <div class="grid gap-4 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-medium text-slate-500">Total campaigns</p>
             <p id="cm-stat-total" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
@@ -1334,9 +1334,9 @@
           </div>
 
           <!-- Table (sm and up) + cards (mobile), both rendered from the same data -->
-          <div id="cm-table-wrap" class="hidden">
+          <div id="cm-table-wrap" class="hidden min-w-0">
             <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm table-fixed border-collapse">
+              <table class="w-full min-w-170 table-fixed border-collapse text-left text-sm">
                 <colgroup>
                   <col class="w-[18%]">
                   <col class="w-[27%]">
@@ -1366,8 +1366,8 @@
 
         <!-- Create campaign dialog -->
         <dialog id="cm-dialog" aria-labelledby="cm-dialog-title"
-          class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
-          <div class="flex max-h-[90vh] flex-col">
+          class="mx-auto mt-3 mb-auto sm:my-auto w-[calc(100%-1.5rem)] max-w-lg max-h-[80dvh] overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/40">
+          <div class="flex max-h-[80dvh] flex-col">
             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <h3 id="cm-dialog-title" class="text-base font-semibold text-slate-900">Create campaign</h3>
               <button type="button" data-cm-close class="rounded-lg p-1.5 text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/50" aria-label="Close">
@@ -1377,7 +1377,7 @@
 
             <!-- Step 1: form -->
             <form id="cm-form" novalidate class="flex min-h-0 flex-1 flex-col">
-              <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+              <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 sm:space-y-4 sm:px-5 sm:py-5">
                 <div>
                   <label for="cm-name" class="mb-1.5 block text-sm font-medium text-slate-700">Campaign name</label>
                   <input id="cm-name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Black Friday 2026" aria-describedby="cm-name-error"
@@ -1437,7 +1437,7 @@
                 <p id="cm-result-replaced" class="hidden rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">This URL already had UTM parameters. They were replaced with the values you entered.</p>
                 <p class="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">Nothing was saved and no short link was created, because campaign saving isn't connected to your backend yet. This is the destination URL with your UTM parameters added.</p>
               </div>
-              <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3.5 sm:flex-row sm:justify-end">
+              <div class="flex flex-col-reverse gap-2 border-t border-slate-200 px-4 py-3 sm:flex-row sm:justify-end sm:px-5 sm:py-3.5">
                 <button type="button" data-cm-close class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-700 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:h-9">Done</button>
               </div>
             </div>
