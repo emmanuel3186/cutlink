@@ -1101,7 +1101,7 @@
         <div id="dm-status" class="sr-only" role="status" aria-live="polite"></div>
 
         <!-- Overview (values filled by JS from the API data) -->
-        <div class="grid gap-4 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-medium text-slate-500">Total domains</p>
             <p id="dm-stat-total" class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">–</p>
@@ -1262,13 +1262,13 @@
       <section id="campaigns" class="hidden space-y-5" aria-labelledby="cm-title">
 
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-5 sm:py-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0">
             <h2 id="cm-title" class="text-xl font-semibold tracking-tight text-slate-900">Campaigns</h2>
             <p class="mt-0.5 text-sm text-slate-500">Create, organize, and track your marketing campaigns.</p>
           </div>
           <button id="cm-create" type="button"
-            class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 active:bg-indigo-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 sm:w-auto focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
             <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11"/></svg>
             Create campaign
           </button>
@@ -1335,7 +1335,7 @@
 
           <!-- Table (sm and up) + cards (mobile), both rendered from the same data -->
           <div id="cm-table-wrap" class="hidden min-w-0">
-            <div class="overflow-x-auto">
+            <div class="hidden overflow-x-auto sm:block">
               <table class="w-full min-w-170 table-fixed border-collapse text-left text-sm">
                 <colgroup>
                   <col class="w-[18%]">
