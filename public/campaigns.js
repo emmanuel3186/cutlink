@@ -439,9 +439,9 @@ export function initCampaignsTab(options = {}) {
     el.formError.classList.add('hidden');
     setSubmitting(false);
     setView('form');
-
-    if (!el.dialog.open) el.dialog.showModal();
-
+    if (!el.dialog.open) {
+      el.dialog.showModal();
+    }
     if (window.matchMedia('(min-width: 640px)').matches) {
       el.fields.name.focus();
     }
